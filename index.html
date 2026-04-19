@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MYZ — La Campagne</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0c0a; --surface:#191512; --surface2:#221d18;
+  --border:#3a2f24; --border2:#56442f;
+  --gold:#c7901e; --gold2:#e5b040; --text:#d1c2a6; --text2:#887568; --text3:#574a3a;
+  --red2:#bf3522; --green2:#489754;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;}
+
+.container{max-width:600px;width:100%;text-align:center;}
+
+.logo{font-family:'Special Elite',cursive;font-size:48px;color:var(--gold2);letter-spacing:.1em;margin-bottom:6px;text-shadow:0 0 40px rgba(199,144,30,.3);}
+.sub{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.25em;margin-bottom:48px;}
+.sub::before{content:'— ';}.sub::after{content:' —';}
+
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px;}
+@media(max-width:500px){.cards{grid-template-columns:1fr;}}
+
+.card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--gold);padding:24px 20px;text-decoration:none;color:var(--text);transition:all .2s;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(199,144,30,.04) 0%,transparent 60%);pointer-events:none;}
+.card:hover{border-color:var(--gold);background:var(--surface2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.card:hover .card-icon{color:var(--gold2);}
+
+.card-icon{font-size:28px;margin-bottom:12px;color:var(--gold);transition:color .2s;}
+.card-title{font-family:'Special Elite',cursive;font-size:18px;color:var(--gold2);margin-bottom:6px;letter-spacing:.05em;}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+.card-badge{position:absolute;top:10px;right:12px;font-size:9px;padding:2px 7px;text-transform:uppercase;letter-spacing:.1em;border:1px solid var(--green2);color:var(--green2);font-family:'Rajdhani',sans-serif;}
+.card-badge.wip{border-color:var(--text3);color:var(--text3);}
+
+.footer{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;line-height:2;}
+.footer a{color:var(--text3);text-decoration:none;}
+.footer a:hover{color:var(--text2);}
+
+.sep{width:60px;height:1px;background:var(--border);margin:0 auto 40px;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="logo">☢ MYZ</div>
+  <div class="sub">Portail de campagne · Mutant Year Zero</div>
+  <div class="sep"></div>
+
+  <div class="cards">
+
+    <a class="card" href="arche-myz.html">
+      <div class="card-badge">En ligne</div>
+      <div class="card-icon">🏚</div>
+      <div class="card-title">L'Arche</div>
+      <div class="card-desc">Développement, population, projets du Peuple, factions, menaces et journal de campagne.</div>
+    </a>
+
+    <a class="card" href="zone.html">
+      <div class="card-badge">En ligne</div>
+      <div class="card-icon">🗺</div>
+      <div class="card-title">La Grande Brume</div>
+      <div class="card-desc">Carte de la Zone, secteurs explorés, dangers, PNJs et artefacts découverts.</div>
+    </a>
+
+    <a class="card" href="relations.html" style="opacity:.55;pointer-events:none;cursor:not-allowed;">
+      <div class="card-badge wip">Bientôt</div>
+      <div class="card-icon">🕸</div>
+      <div class="card-title">Toile des Relations</div>
+      <div class="card-desc">Graphe des relations entre PNJs et personnages joueurs. Alliés, ennemis, factions.</div>
+    </a>
+
+    <div class="card" style="opacity:.45;cursor:not-allowed;">
+      <div class="card-badge wip">À venir</div>
+      <div class="card-icon">📖</div>
+      <div class="card-title">Chronique</div>
+      <div class="card-desc">Suivi de la campagne : résumés de séances, PNJs mémorables, quêtes actives.</div>
+    </div>
+
+  </div>
+
+  <div class="sep"></div>
+  <div class="footer">
+    Mutant : Year Zero · Free League Publishing<br>
+    Portail de campagne — usage privé
+  </div>
+
+</div>
+</body>
+</html>
