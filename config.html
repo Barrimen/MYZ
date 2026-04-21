@@ -451,6 +451,112 @@ body {
   line-height: 1.5;
 }
 
+/* ── TABS ── */
+
+.tab-nav {
+  display: flex;
+  gap: 0;
+  margin-bottom: calc(var(--spacing-unit) * 2.5);
+  border-bottom: 2px solid var(--border);
+}
+
+.tab-btn {
+  padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 2.5);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text3);
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--gold2); border-bottom-color: var(--gold); }
+
+/* ── TEXTES ── */
+
+.text-tab-wrap {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: calc(var(--spacing-unit) * 2.5);
+  align-items: start;
+}
+
+.text-page-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 20px;
+}
+
+.tpb {
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  text-align: left;
+  letter-spacing: 0.04em;
+  transition: all 0.13s;
+}
+
+.tpb:hover { border-color: var(--gold); color: var(--gold); }
+.tpb.active { border-color: var(--gold); color: var(--gold2); background: rgba(199,144,30,0.08); font-weight: 700; }
+
+.text-fields-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
+  padding: calc(var(--spacing-unit) * 2.25);
+}
+
+.tfield {
+  margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+.tfield:last-of-type { margin-bottom: 0; }
+
+.tfield-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tfield-key {
+  font-size: 0.625rem;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+  font-family: monospace;
+}
+
+.tfield-preview {
+  font-size: 0.75rem;
+  color: var(--gold);
+  margin-top: 5px;
+  min-height: 16px;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.text-controls {
+  display: flex;
+  gap: calc(var(--spacing-unit) * 1);
+  margin-top: calc(var(--spacing-unit) * 2.5);
+  padding-top: calc(var(--spacing-unit) * 2);
+  border-top: 1px solid var(--border);
+}
+
 .back-link {
   display: inline-block;
   margin-bottom: calc(var(--spacing-unit) * 2);
@@ -495,7 +601,7 @@ body {
   <div class="config-header">
     <div>
       <a href="index.html" class="back-link">← Retour à l'accueil</a>
-      <div class="config-title">⚙ Configuration du thème</div>
+      <div class="config-title">⚙ Administration</div>
     </div>
     <div class="config-user">
       <span class="pseudo" id="user-pseudo">—</span>
@@ -503,6 +609,12 @@ body {
     </div>
   </div>
 
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="tab-theme">Thème</button>
+    <button class="tab-btn" data-tab="tab-textes">Textes</button>
+  </div>
+
+  <div id="tab-theme" class="tab-panel">
   <div class="config-grid">
 
     <!-- Paramètres basiques -->
@@ -590,16 +702,179 @@ body {
     </div>
 
   </div>
+  </div><!-- /#tab-theme -->
+
+  <div id="tab-textes" class="tab-panel" style="display:none;">
+    <div class="text-tab-wrap">
+      <div class="text-page-nav" id="text-page-nav"></div>
+      <div class="text-fields-panel">
+        <div id="text-fields"></div>
+        <div class="text-controls">
+          <button class="btn-preview" id="btn-save-texts">💾 Sauvegarder</button>
+          <button class="btn-preview danger" id="btn-reset-texts">↺ Réinitialiser</button>
+        </div>
+        <div class="config-status" id="text-status"></div>
+      </div>
+    </div>
+  </div><!-- /#tab-textes -->
 
 </div>
 
 <!-- ── FIREBASE + APP ── -->
+<script src="content-init.js"></script>
 <script type="module">
 import { auth, db, ADMIN_UID, loginUser, logoutUser, onAuthStateChanged } from './auth-init.js';
 import { doc, getDoc, setDoc }
   from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const themeDocRef = () => doc(db, 'config', 'theme');
+
+/* ══════════════════ TEXTES — SCHÉMA ══════════════════ */
+
+const CONTENT_SCHEMA = {
+  global: {
+    _label: 'Global',
+    loginTitle:    { label: 'Titre connexion',          default: 'Connexion' },
+    loginSub:      { label: 'Sous-titre connexion',     default: 'Accès écriture' },
+    footerCredit:  { label: 'Crédit footer',            default: 'Mutant : Year Zero · Free League Publishing' },
+    footerPrivate: { label: 'Mention footer',           default: 'Portail de campagne — usage privé' }
+  },
+  index: {
+    _label: 'Accueil',
+    pageSubtitle: { label: 'Sous-titre page', default: 'Portail de campagne · Mutant Year Zero' }
+  },
+  relations: {
+    _label: 'Relations',
+    pageTitle:      { label: 'Titre page',                  default: '🕸 La Toile des Relations' },
+    emptyTitle:     { label: 'Titre état vide',             default: 'La toile est vide' },
+    emptyHint:      { label: 'Hint état vide (visiteur)',   default: 'Connectez-vous ou cliquez sur « + Personnage » pour commencer' },
+    emptyHintAuth:  { label: 'Hint état vide (connecté)',   default: 'Cliquez sur le canvas ou utilisez « + Personnage » pour commencer' },
+    journalTitle:   { label: 'Titre journal',               default: 'Journal des relations' },
+    journalEmpty:   { label: 'Journal vide',                default: 'Aucune action pour l\'instant.' },
+    btnAddNode:     { label: 'Bouton + Personnage',         default: '+ Personnage' },
+    btnAddRelation: { label: 'Bouton + Relation',           default: '+ Relation' }
+  },
+  chronique: {
+    _label: 'Chronique',
+    pageTitle:         { label: 'Titre page',                     default: '📖 La Chronique du Peuple' },
+    emptyTitle:        { label: 'Titre état vide',                default: 'La chronique attend d\'être écrite' },
+    emptySubtitle:     { label: 'Sous-titre état vide (visiteur)', default: 'Connectez-vous pour ajouter des séances' },
+    emptySubtitleAuth: { label: 'Sous-titre état vide (connecté)', default: 'Sélectionnez une séance ou créez-en une nouvelle' },
+    sidebarLabel:      { label: 'Libellé sidebar gauche',         default: 'Séances de campagne' },
+    momentsTitle:      { label: 'Titre sidebar Moments',          default: 'Moments' },
+    timelineEmpty:     { label: 'Frise vide',                     default: 'Aucune séance' }
+  }
+};
+
+let currentTextPage = 'global';
+const textData = {};
+
+function escAttr(s) {
+  return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function showTextStatus(msg, ok = true) {
+  const el = document.getElementById('text-status');
+  el.textContent = msg;
+  el.className = 'config-status show ' + (ok ? 'success' : 'error');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function renderPageNav() {
+  const nav = document.getElementById('text-page-nav');
+  nav.innerHTML = Object.entries(CONTENT_SCHEMA).map(([id, def]) =>
+    `<button class="tpb ${id === currentTextPage ? 'active' : ''}" data-page="${id}">${def._label}</button>`
+  ).join('');
+  nav.querySelectorAll('.tpb').forEach(btn => {
+    btn.addEventListener('click', () => loadTextPage(btn.dataset.page));
+  });
+}
+
+function renderTextFields() {
+  renderPageNav();
+  const schema = CONTENT_SCHEMA[currentTextPage];
+  const saved = textData[currentTextPage] || {};
+  const fields = Object.entries(schema).filter(([k]) => k !== '_label');
+  document.getElementById('text-fields').innerHTML = fields.map(([key, def]) => {
+    const val = saved[key] !== undefined ? saved[key] : def.default;
+    return `
+      <div class="tfield">
+        <div class="tfield-label">${def.label}</div>
+        <div class="tfield-key">${key}</div>
+        <input type="text" class="config-color-hex" style="width:100%;" data-key="${key}" value="${escAttr(val)}">
+        <div class="tfield-preview" id="tprev-${key}">${escAttr(val)}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.querySelectorAll('#text-fields input[data-key]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const prev = document.getElementById('tprev-' + inp.dataset.key);
+      if (prev) prev.textContent = inp.value;
+    });
+  });
+}
+
+async function loadTextPage(pageId) {
+  currentTextPage = pageId;
+  if (!textData[pageId]) {
+    try {
+      const snap = await getDoc(doc(db, 'content', pageId));
+      textData[pageId] = snap.exists() ? (snap.data().strings || {}) : {};
+    } catch (e) {
+      textData[pageId] = {};
+    }
+  }
+  renderTextFields();
+}
+
+async function saveTexts() {
+  const strings = {};
+  document.querySelectorAll('#text-fields input[data-key]').forEach(inp => {
+    strings[inp.dataset.key] = inp.value;
+  });
+  try {
+    await setDoc(doc(db, 'content', currentTextPage), { strings });
+    textData[currentTextPage] = strings;
+    showTextStatus('✓ Textes sauvegardés');
+  } catch (e) {
+    console.error(e);
+    showTextStatus('✗ Erreur lors de la sauvegarde', false);
+  }
+}
+
+function resetTexts() {
+  const schema = CONTENT_SCHEMA[currentTextPage];
+  document.querySelectorAll('#text-fields input[data-key]').forEach(inp => {
+    const def = schema[inp.dataset.key];
+    if (def) {
+      inp.value = def.default;
+      const prev = document.getElementById('tprev-' + inp.dataset.key);
+      if (prev) prev.textContent = def.default;
+    }
+  });
+}
+
+document.getElementById('btn-save-texts').addEventListener('click', saveTexts);
+document.getElementById('btn-reset-texts').addEventListener('click', () => {
+  if (confirm('Réinitialiser les textes aux valeurs par défaut ?')) resetTexts();
+});
+
+/* ══════════════════ TABS ══════════════════ */
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => { p.style.display = 'none'; });
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).style.display = '';
+    if (btn.dataset.tab === 'tab-textes' && !Object.keys(textData).length) {
+      loadTextPage('global');
+    }
+  });
+});
+
+/* ══════════════════ FIN TEXTES ══════════════════ */
 
 /* ── STATE ── */
 let currentUser = null;

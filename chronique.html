@@ -762,7 +762,7 @@ body {
 <header class="chr-header">
   <div class="chr-header-left">
     <a href="index.html" class="back-link">⬅ Accueil</a>
-    <div class="page-title">📖 La Chronique du Peuple</div>
+    <div class="page-title" data-content="pageTitle">📖 La Chronique du Peuple</div>
   </div>
   <div class="auth-area" id="auth-area"><!-- JS --></div>
 </header>
@@ -770,7 +770,7 @@ body {
 <!-- ════════════════ TIMELINE ════════════════ -->
 <div class="timeline-bar" id="timeline-bar">
   <span class="tl-label">Frise ·</span>
-  <span class="tl-empty" id="tl-empty">Aucune séance</span>
+  <span class="tl-empty" id="tl-empty" data-content="timelineEmpty">Aucune séance</span>
 </div>
 
 <!-- ════════════════ MAIN ════════════════ -->
@@ -780,7 +780,7 @@ body {
   <div class="chr-left">
 
     <div class="chr-left-top">
-      <div class="page-sub">Séances de campagne</div>
+      <div class="page-sub" data-content="sidebarLabel">Séances de campagne</div>
       <button class="btn btn-sm primary" id="btn-new-seance" style="width:100%;display:none;">+ Nouvelle séance</button>
     </div>
 
@@ -815,8 +815,8 @@ body {
     <!-- Empty state -->
     <div class="chr-empty" id="chr-empty">
       <div class="chr-empty-icon">📖</div>
-      <div class="chr-empty-title">La chronique attend d'être écrite</div>
-      <div class="chr-empty-sub" id="empty-sub">Sélectionnez une séance ou créez-en une nouvelle</div>
+      <div class="chr-empty-title" data-content="emptyTitle">La chronique attend d'être écrite</div>
+      <div class="chr-empty-sub" id="empty-sub" data-content="emptySubtitle">Connectez-vous pour ajouter des séances</div>
     </div>
 
     <!-- Contenu séance -->
@@ -906,7 +906,7 @@ body {
   <!-- ── SIDEBAR DROITE ── -->
   <div class="chr-right" id="chr-right">
     <div class="chr-right-header" id="chr-right-toggle">
-      <div class="chr-right-title">Moments</div>
+      <div class="chr-right-title" data-content="momentsTitle">Moments</div>
       <span class="right-arrow">◀</span>
     </div>
     <div class="chr-right-body">
@@ -1013,6 +1013,7 @@ body {
 </div>
 
 <!-- ════════════════ SCRIPT ════════════════ -->
+<script src="content-init.js"></script>
 <script type="module">
 import { auth, db, ADMIN_UID, loginUser, logoutUser, onAuthStateChanged } from './auth-init.js';
 import { collection, doc, addDoc, updateDoc, deleteDoc,
@@ -1592,8 +1593,8 @@ function renderAuth(user) {
   }
 
   document.getElementById('empty-sub').textContent = user
-    ? 'Sélectionnez une séance ou créez-en une nouvelle'
-    : 'Connectez-vous pour ajouter des séances';
+    ? (window.contentStrings?.emptySubtitleAuth || 'Sélectionnez une séance ou créez-en une nouvelle')
+    : (window.contentStrings?.emptySubtitle     || 'Connectez-vous pour ajouter des séances');
 }
 
 onAuthStateChanged(auth, user => {

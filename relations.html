@@ -368,9 +368,9 @@ body {
 <header class="rel-header">
   <div class="rel-header-left">
     <a href="index.html" class="back-link">⬅ Accueil</a>
-    <div class="page-title">🕸 La Toile des Relations</div>
-    <button class="btn btn-sm primary" id="btn-add-node">+ Personnage</button>
-    <button class="btn btn-sm" id="btn-add-relation">+ Relation</button>
+    <div class="page-title" data-content="pageTitle">🕸 La Toile des Relations</div>
+    <button class="btn btn-sm primary" id="btn-add-node" data-content="btnAddNode">+ Personnage</button>
+    <button class="btn btn-sm" id="btn-add-relation" data-content="btnAddRelation">+ Relation</button>
   </div>
   <div class="auth-area" id="auth-area"><!-- JS --></div>
 </header>
@@ -384,8 +384,8 @@ body {
 
     <div class="graph-empty" id="graph-empty">
       <div class="graph-empty-icon">🕸</div>
-      <div class="graph-empty-title">La toile est vide</div>
-      <div class="graph-empty-sub" id="empty-hint">Connectez-vous pour commencer à tisser</div>
+      <div class="graph-empty-title" data-content="emptyTitle">La toile est vide</div>
+      <div class="graph-empty-sub" id="empty-hint" data-content="emptyHint">Connectez-vous ou cliquez sur « + Personnage » pour commencer</div>
     </div>
 
     <div class="graph-hint" id="graph-hint" style="display:none;">
@@ -396,7 +396,7 @@ body {
   <!-- Journal -->
   <div class="journal" id="journal">
     <div class="journal-header" id="journal-toggle">
-      <div class="journal-title">Journal des relations</div>
+      <div class="journal-title" data-content="journalTitle">Journal des relations</div>
       <span class="journal-arrow">◀</span>
     </div>
     <div class="journal-body" id="journal-body">
@@ -568,6 +568,7 @@ body {
 </div>
 
 <!-- ═══════════════════════════════════ SCRIPTS ════════════════════════════════ -->
+<script src="content-init.js"></script>
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/vis-network/standalone/umd/vis-network.min.css">
 <script type="module">
@@ -739,8 +740,8 @@ function updateEmptyState() {
   document.getElementById('graph-empty').style.display = hasNodes ? 'none' : '';
   document.getElementById('graph-hint').style.display  = hasNodes ? '' : 'none';
   document.getElementById('empty-hint').textContent = currentUser
-    ? 'Cliquez sur le canvas ou utilisez "+ Personnage" pour commencer'
-    : 'Connectez-vous ou cliquez sur "+ Personnage" pour commencer';
+    ? (window.contentStrings?.emptyHintAuth || 'Cliquez sur le canvas ou utilisez « + Personnage » pour commencer')
+    : (window.contentStrings?.emptyHint     || 'Connectez-vous ou cliquez sur « + Personnage » pour commencer');
 }
 
 /* ── FIRESTORE LISTENERS (temps réel) ── */
