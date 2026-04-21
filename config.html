@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuration du thème — MYZ</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="myz-theme.css">
+<script src="theme-init.js"></script>
+<style>
+body {
+  min-height: 100vh;
+  padding: calc(var(--spacing-unit) * 2.75) calc(var(--spacing-unit) * 2.25);
+}
+
+.config-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  padding-bottom: calc(var(--spacing-unit) * 2);
+  border-bottom: 1px solid var(--border);
+}
+
+.config-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--gold2);
+  letter-spacing: 0.1em;
+}
+
+.config-user {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 1.25);
+  font-size: 0.875rem;
+  color: var(--text2);
+}
+
+.config-user .pseudo {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.config-user .btn-logout {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: all 0.15s;
+}
+
+.config-user .btn-logout:hover {
+  border-color: var(--red2);
+  color: var(--red2);
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--spacing-unit) * 2.5);
+  margin-bottom: calc(var(--spacing-unit) * 3);
+}
+
+@media (max-width: 768px) {
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.config-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
+  padding: calc(var(--spacing-unit) * 2.25);
+}
+
+.config-panel-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  color: var(--gold2);
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  padding-bottom: calc(var(--spacing-unit) * 1);
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.05em;
+}
+
+.config-field {
+  margin-bottom: calc(var(--spacing-unit) * 2.25);
+}
+
+.config-field:last-child {
+  margin-bottom: 0;
+}
+
+.config-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: calc(var(--spacing-unit) * 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.config-label-sub {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text3);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  margin-top: calc(var(--spacing-unit) * 0.25);
+}
+
+.config-value {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--gold);
+  margin-top: calc(var(--spacing-unit) * 0.5);
+}
+
+/* Slider */
+.config-slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface2);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  margin: calc(var(--spacing-unit) * 0.75) 0;
+}
+
+.config-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+  border: 2px solid var(--surface);
+  transition: all 0.2s;
+  box-shadow: 0 0 8px rgba(199, 144, 30, 0.5);
+}
+
+.config-slider::-webkit-slider-thumb:hover {
+  background: var(--gold2);
+  box-shadow: 0 0 12px rgba(229, 176, 64, 0.7);
+}
+
+.config-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+  border: 2px solid var(--surface);
+  transition: all 0.2s;
+  box-shadow: 0 0 8px rgba(199, 144, 30, 0.5);
+}
+
+.config-slider::-moz-range-thumb:hover {
+  background: var(--gold2);
+  box-shadow: 0 0 12px rgba(229, 176, 64, 0.7);
+}
+
+.config-slider::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
+.config-slider::-moz-range-progress {
+  background: var(--gold);
+}
+
+/* Color picker */
+.config-color-wrapper {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 1);
+}
+
+.config-color-input {
+  width: 60px;
+  height: 40px;
+  border: 2px solid var(--border2);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.config-color-input:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 8px rgba(199, 144, 30, 0.3);
+}
+
+.config-color-hex {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  outline: none;
+}
+
+.config-color-hex:focus {
+  border-color: var(--gold);
+  background: var(--surface3);
+}
+
+/* Preview panel */
+.preview-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
+  padding: calc(var(--spacing-unit) * 2.25);
+  grid-column: 1 / -1;
+}
+
+.preview-panel-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  color: var(--gold2);
+  margin-bottom: calc(var(--spacing-unit) * 1.5);
+  letter-spacing: 0.05em;
+}
+
+.preview-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: calc(var(--spacing-unit) * 1.5));
+  margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+.preview-item {
+  padding: calc(var(--spacing-unit) * 1.5);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  border-top: 2px solid var(--gold);
+}
+
+.preview-item-label {
+  font-size: 0.75rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: calc(var(--spacing-unit) * 0.75);
+}
+
+.preview-item-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  color: var(--gold2);
+  margin-bottom: calc(var(--spacing-unit) * 0.5);
+}
+
+.preview-item-text {
+  font-size: 0.875rem;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.preview-buttons {
+  display: flex;
+  gap: calc(var(--spacing-unit) * 1);
+}
+
+.btn-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 0.5);
+  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+  border: 1px solid var(--border);
+  background: var(--surface3);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-preview:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(199, 144, 30, 0.08);
+}
+
+.btn-preview.danger {
+  color: var(--red2);
+  border-color: var(--red2);
+}
+
+.btn-preview.danger:hover {
+  background: rgba(191, 53, 34, 0.08);
+}
+
+/* Control bar */
+.config-controls {
+  display: flex;
+  gap: calc(var(--spacing-unit) * 1);
+  margin-top: calc(var(--spacing-unit) * 2);
+  flex-wrap: wrap;
+}
+
+.config-status {
+  font-size: 0.875rem;
+  color: var(--text2);
+  padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 1.5);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  margin-top: calc(var(--spacing-unit) * 1);
+  display: none;
+}
+
+.config-status.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+
+.config-status.success {
+  border-color: var(--green2);
+  color: var(--green2);
+}
+
+.config-status.error {
+  border-color: var(--red2);
+  color: var(--red2);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Login overlay */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.login-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
+  padding: calc(var(--spacing-unit) * 4) calc(var(--spacing-unit) * 3.5);
+  max-width: 380px;
+  width: 100%;
+}
+
+.login-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--gold2);
+  margin-bottom: 6px;
+}
+
+.login-sub {
+  font-size: 0.875rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: calc(var(--spacing-unit) * 3);
+}
+
+.login-box .ef {
+  margin-bottom: calc(var(--spacing-unit) * 1.75);
+}
+
+.login-box input {
+  width: 100%;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: calc(var(--spacing-unit) * 1.125) calc(var(--spacing-unit) * 1.375);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.login-box input:focus {
+  border-color: var(--gold);
+}
+
+.login-btn {
+  width: 100%;
+  background: rgba(199, 144, 30, 0.15);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: calc(var(--spacing-unit) * 1.375);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  margin-top: calc(var(--spacing-unit) * 1.25);
+  transition: all 0.15s;
+}
+
+.login-btn:hover {
+  background: rgba(199, 144, 30, 0.3);
+}
+
+.login-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.login-err {
+  font-size: 0.875rem;
+  color: var(--red2);
+  margin-top: calc(var(--spacing-unit) * 1.25);
+  min-height: 14px;
+  text-align: center;
+}
+
+.login-hint {
+  font-size: 0.75rem;
+  color: var(--text3);
+  text-align: center;
+  margin-top: calc(var(--spacing-unit) * 2);
+  line-height: 1.5;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  color: var(--text3);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.back-link:hover {
+  color: var(--gold);
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <a href="index.html" class="back-link">← Retour</a>
+    <div class="login-title">⚙ Configuration</div>
+    <div class="login-sub">Paramètres du thème</div>
+    <form id="login-form">
+      <div class="ef">
+        <label>E-mail</label>
+        <input type="email" id="login-email" autocomplete="email" required>
+      </div>
+      <div class="ef">
+        <label>Mot de passe</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="login-btn" id="login-btn">Accès Admin</button>
+      <div class="login-err" id="login-err"></div>
+    </form>
+    <div class="login-hint">Seul l'administrateur peut modifier la configuration du thème.</div>
+  </div>
+</div>
+
+<!-- CONFIG PAGE (hidden until login) -->
+<div class="config-container" id="config-app" style="display:none;">
+
+  <div class="config-header">
+    <div>
+      <a href="index.html" class="back-link">← Retour à l'accueil</a>
+      <div class="config-title">⚙ Configuration du thème</div>
+    </div>
+    <div class="config-user">
+      <span class="pseudo" id="user-pseudo">—</span>
+      <button class="btn-logout" id="logout-btn">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="config-grid">
+
+    <!-- Paramètres basiques -->
+    <div class="config-panel">
+      <div class="config-panel-title">Typographie</div>
+
+      <div class="config-field">
+        <label class="config-label">
+          Taille de police de base
+          <span class="config-label-sub">Affecte tout le texte du site</span>
+        </label>
+        <input type="range" id="baseFontSize" class="config-slider" min="14" max="24" value="18">
+        <div class="config-value"><span id="baseFontSize-val">18</span>px</div>
+      </div>
+
+    </div>
+
+    <!-- Couleurs -->
+    <div class="config-panel">
+      <div class="config-panel-title">Couleurs principales</div>
+
+      <div class="config-field">
+        <label class="config-label">Couleur dorée (accents)</label>
+        <div class="config-color-wrapper">
+          <input type="color" id="goldColor" class="config-color-input">
+          <input type="text" id="goldColor-hex" class="config-color-hex" placeholder="#c7901e">
+        </div>
+      </div>
+
+      <div class="config-field">
+        <label class="config-label">Couleur de fond</label>
+        <div class="config-color-wrapper">
+          <input type="color" id="bgColor" class="config-color-input">
+          <input type="text" id="bgColor-hex" class="config-color-hex" placeholder="#0e0c0a">
+        </div>
+      </div>
+
+      <div class="config-field">
+        <label class="config-label">Couleur du texte</label>
+        <div class="config-color-wrapper">
+          <input type="color" id="textColor" class="config-color-input">
+          <input type="text" id="textColor-hex" class="config-color-hex" placeholder="#d1c2a6">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Intensité -->
+    <div class="config-panel">
+      <div class="config-panel-title">Intensité visuelle</div>
+
+      <div class="config-field">
+        <label class="config-label">
+          Intensité des bordures
+          <span class="config-label-sub">0,5 = subtile · 1,0 = normal · 1,5 = fort</span>
+        </label>
+        <input type="range" id="borderIntensity" class="config-slider" min="0.5" max="1.5" step="0.1" value="1">
+        <div class="config-value"><span id="borderIntensity-val">1.0</span>x</div>
+      </div>
+
+    </div>
+
+    <!-- Aperçu -->
+    <div class="preview-panel">
+      <div class="preview-panel-title">Aperçu des changements</div>
+      <div class="preview-content">
+        <div class="preview-item">
+          <div class="preview-item-label">Titre</div>
+          <div class="preview-item-title">Exemple</div>
+        </div>
+        <div class="preview-item">
+          <div class="preview-item-label">Texte</div>
+          <div class="preview-item-text">Texte normal du site avec la police appliquée et la couleur actuelle.</div>
+        </div>
+        <div class="preview-item">
+          <div class="preview-item-label">Accent</div>
+          <div class="preview-item-title" style="color: var(--gold);">Doré</div>
+        </div>
+      </div>
+      <div class="preview-buttons">
+        <button class="btn-preview" id="btn-save">💾 Sauvegarder</button>
+        <button class="btn-preview danger" id="btn-reset">↺ Réinitialiser</button>
+      </div>
+      <div class="config-status" id="config-status"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ── FIREBASE + APP ── -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+/* ── CONFIG FIREBASE ── */
+const firebaseConfig = {
+  apiKey: "AIzaSyBDxi-HmCweLukbYF2KMq9O72yS9PIMoeA",
+  authDomain: "myz-campagne.firebaseapp.com",
+  projectId: "myz-campagne",
+  storageBucket: "myz-campagne.firebasestorage.app",
+  messagingSenderId: "352488409798",
+  appId: "1:352488409798:web:e6d3daa4bc6e8a09a065c7"
+};
+
+const ADMIN_UID = "NQDL7LT3zmewlfSJa69VWY6qSPU2";  // UID du MJ = Admin
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+/* ── STATE ── */
+let currentUser = null;
+let isAdmin = false;
+
+/* ── FUNCTIONS ── */
+
+function showStatus(msg, isSuccess = true) {
+  const el = document.getElementById('config-status');
+  el.textContent = msg;
+  el.className = 'config-status show ' + (isSuccess ? 'success' : 'error');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function syncSliderToHex(sliderId, hexId, colorId) {
+  const input = document.getElementById(sliderId);
+  const hex = document.getElementById(hexId);
+  const color = document.getElementById(colorId);
+  
+  input.addEventListener('change', () => {
+    const val = input.value;
+    updateColorDisplay(color, hex, val);
+  });
+}
+
+function syncHexToSlider(hexId, colorId, sliderId) {
+  const hex = document.getElementById(hexId);
+  const color = document.getElementById(colorId);
+  const input = document.getElementById(sliderId);
+  
+  hex.addEventListener('change', () => {
+    let val = hex.value.trim();
+    if (!val.startsWith('#')) val = '#' + val;
+    if (/^#[0-9A-F]{6}$/i.test(val)) {
+      color.value = val;
+      updateColorDisplay(color, hex, val);
+    }
+  });
+  
+  color.addEventListener('change', () => {
+    const val = color.value;
+    hex.value = val;
+  });
+}
+
+function updateColorDisplay(colorInput, hexInput, value) {
+  colorInput.value = value;
+  hexInput.value = value;
+}
+
+function loadConfig() {
+  const config = window.themeConfig.getThemeConfig();
+  
+  // Charger les valeurs dans les inputs
+  document.getElementById('baseFontSize').value = config.baseFontSize;
+  document.getElementById('baseFontSize-val').textContent = config.baseFontSize;
+  
+  document.getElementById('goldColor').value = config.goldColor;
+  document.getElementById('goldColor-hex').value = config.goldColor;
+  
+  document.getElementById('bgColor').value = config.bgColor;
+  document.getElementById('bgColor-hex').value = config.bgColor;
+  
+  document.getElementById('textColor').value = config.textColor;
+  document.getElementById('textColor-hex').value = config.textColor;
+  
+  document.getElementById('borderIntensity').value = config.borderIntensity;
+  document.getElementById('borderIntensity-val').textContent = config.borderIntensity.toFixed(1);
+}
+
+function saveConfig() {
+  const config = {
+    baseFontSize: parseInt(document.getElementById('baseFontSize').value),
+    goldColor: document.getElementById('goldColor').value,
+    bgColor: document.getElementById('bgColor').value,
+    textColor: document.getElementById('textColor').value,
+    borderIntensity: parseFloat(document.getElementById('borderIntensity').value)
+  };
+  
+  const ok = window.themeConfig.saveConfig(config);
+  if (ok) {
+    showStatus('✓ Configuration sauvegardée !', true);
+  } else {
+    showStatus('✗ Erreur lors de la sauvegarde', false);
+  }
+}
+
+function resetConfig() {
+  if (!confirm('Réinitialiser à la configuration par défaut ?')) return;
+  
+  const ok = window.themeConfig.resetConfig();
+  if (ok) {
+    loadConfig();
+    showStatus('✓ Configuration réinitialisée', true);
+  } else {
+    showStatus('✗ Erreur lors de la réinitialisation', false);
+  }
+}
+
+/* ── EVENTS ── */
+
+// Sliders
+document.getElementById('baseFontSize').addEventListener('input', (e) => {
+  document.getElementById('baseFontSize-val').textContent = e.target.value;
+  window.themeConfig.applyThemeConfig({
+    baseFontSize: parseInt(e.target.value),
+    goldColor: document.getElementById('goldColor').value,
+    bgColor: document.getElementById('bgColor').value,
+    textColor: document.getElementById('textColor').value,
+    borderIntensity: parseFloat(document.getElementById('borderIntensity').value)
+  });
+});
+
+document.getElementById('borderIntensity').addEventListener('input', (e) => {
+  const val = parseFloat(e.target.value);
+  document.getElementById('borderIntensity-val').textContent = val.toFixed(1);
+  window.themeConfig.applyThemeConfig({
+    baseFontSize: parseInt(document.getElementById('baseFontSize').value),
+    goldColor: document.getElementById('goldColor').value,
+    bgColor: document.getElementById('bgColor').value,
+    textColor: document.getElementById('textColor').value,
+    borderIntensity: val
+  });
+});
+
+// Color pickers
+['goldColor', 'bgColor', 'textColor'].forEach(fieldName => {
+  const colorInput = document.getElementById(fieldName);
+  const hexInput = document.getElementById(fieldName + '-hex');
+  
+  colorInput.addEventListener('change', () => {
+    hexInput.value = colorInput.value;
+    updateLivePreview();
+  });
+  
+  hexInput.addEventListener('change', () => {
+    let val = hexInput.value.trim();
+    if (!val.startsWith('#')) val = '#' + val;
+    if (/^#[0-9A-F]{6}$/i.test(val)) {
+      colorInput.value = val;
+      updateLivePreview();
+    }
+  });
+});
+
+function updateLivePreview() {
+  window.themeConfig.applyThemeConfig({
+    baseFontSize: parseInt(document.getElementById('baseFontSize').value),
+    goldColor: document.getElementById('goldColor').value,
+    bgColor: document.getElementById('bgColor').value,
+    textColor: document.getElementById('textColor').value,
+    borderIntensity: parseFloat(document.getElementById('borderIntensity').value)
+  });
+}
+
+// Buttons
+document.getElementById('btn-save').addEventListener('click', saveConfig);
+document.getElementById('btn-reset').addEventListener('click', resetConfig);
+
+/* ── AUTH ── */
+const loginForm = document.getElementById('login-form');
+const loginBtn = document.getElementById('login-btn');
+const loginErr = document.getElementById('login-err');
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  loginErr.textContent = '';
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Connexion…';
+  const email = document.getElementById('login-email').value.trim();
+  const pwd = document.getElementById('login-password').value;
+  
+  try {
+    await signInWithEmailAndPassword(auth, email, pwd);
+  } catch (err) {
+    console.error(err);
+    let msg = 'Identifiants incorrects.';
+    if (err.code === 'auth/too-many-requests') msg = 'Trop de tentatives, réessaie plus tard.';
+    loginErr.textContent = msg;
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Accès Admin';
+  }
+});
+
+document.getElementById('logout-btn')?.addEventListener('click', async () => {
+  if (confirm('Se déconnecter ?')) {
+    await signOut(auth);
+    location.reload();
+  }
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    isAdmin = (user.uid === ADMIN_UID);
+    
+    if (!isAdmin) {
+      loginErr.textContent = 'Accès réservé à l\'administrateur.';
+      loginBtn.textContent = 'Accès refusé';
+      loginBtn.disabled = true;
+      return;
+    }
+    
+    // Afficher l'app
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('config-app').style.display = '';
+    document.getElementById('user-pseudo').textContent = user.email.split('@')[0];
+    
+    // Charger la configuration
+    loadConfig();
+  } else {
+    currentUser = null;
+    isAdmin = false;
+    document.getElementById('login-overlay').style.display = '';
+    document.getElementById('config-app').style.display = 'none';
+  }
+});
+</script>
+
+</body>
+</html>
