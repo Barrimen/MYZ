@@ -598,6 +598,8 @@ body {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc }
+  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 /* ── CONFIG FIREBASE ── */
 const firebaseConfig = {
@@ -613,6 +615,9 @@ const ADMIN_UID = "NQDL7LT3zmewlfSJa69VWY6qSPU2";  // UID du MJ = Admin
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+
+const themeDocRef = () => doc(db, 'config', 'theme');
 
 /* ── STATE ── */
 let currentUser = null;
@@ -663,27 +668,31 @@ function updateColorDisplay(colorInput, hexInput, value) {
   hexInput.value = value;
 }
 
-function loadConfig() {
-  const config = window.themeConfig.getThemeConfig();
-  
-  // Charger les valeurs dans les inputs
+async function loadConfig() {
+  let config = window.themeConfig.DEFAULT_THEME;
+  try {
+    const snap = await getDoc(themeDocRef());
+    if (snap.exists()) {
+      config = Object.assign({}, window.themeConfig.DEFAULT_THEME, snap.data());
+    }
+  } catch (e) {
+    console.error('Erreur lecture Firestore:', e);
+  }
+
   document.getElementById('baseFontSize').value = config.baseFontSize;
   document.getElementById('baseFontSize-val').textContent = config.baseFontSize;
-  
   document.getElementById('goldColor').value = config.goldColor;
   document.getElementById('goldColor-hex').value = config.goldColor;
-  
   document.getElementById('bgColor').value = config.bgColor;
   document.getElementById('bgColor-hex').value = config.bgColor;
-  
   document.getElementById('textColor').value = config.textColor;
   document.getElementById('textColor-hex').value = config.textColor;
-  
   document.getElementById('borderIntensity').value = config.borderIntensity;
   document.getElementById('borderIntensity-val').textContent = config.borderIntensity.toFixed(1);
 }
 
-function saveConfig() {
+async function saveConfig() {
+  if (!isAdmin) return;
   const config = {
     baseFontSize: parseInt(document.getElementById('baseFontSize').value),
     goldColor: document.getElementById('goldColor').value,
@@ -691,23 +700,26 @@ function saveConfig() {
     textColor: document.getElementById('textColor').value,
     borderIntensity: parseFloat(document.getElementById('borderIntensity').value)
   };
-  
-  const ok = window.themeConfig.saveConfig(config);
-  if (ok) {
+  try {
+    await setDoc(themeDocRef(), config);
+    window.themeConfig.applyThemeConfig(config);
     showStatus('✓ Configuration sauvegardée !', true);
-  } else {
+  } catch (e) {
+    console.error('Erreur sauvegarde Firestore:', e);
     showStatus('✗ Erreur lors de la sauvegarde', false);
   }
 }
 
-function resetConfig() {
+async function resetConfig() {
   if (!confirm('Réinitialiser à la configuration par défaut ?')) return;
-  
-  const ok = window.themeConfig.resetConfig();
-  if (ok) {
-    loadConfig();
+  if (!isAdmin) return;
+  try {
+    await setDoc(themeDocRef(), window.themeConfig.DEFAULT_THEME);
+    window.themeConfig.applyThemeConfig(window.themeConfig.DEFAULT_THEME);
+    await loadConfig();
     showStatus('✓ Configuration réinitialisée', true);
-  } else {
+  } catch (e) {
+    console.error('Erreur reset Firestore:', e);
     showStatus('✗ Erreur lors de la réinitialisation', false);
   }
 }
@@ -805,25 +817,23 @@ document.getElementById('logout-btn')?.addEventListener('click', async () => {
   }
 });
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     isAdmin = (user.uid === ADMIN_UID);
-    
+
     if (!isAdmin) {
       loginErr.textContent = 'Accès réservé à l\'administrateur.';
       loginBtn.textContent = 'Accès refusé';
       loginBtn.disabled = true;
       return;
     }
-    
-    // Afficher l'app
+
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('config-app').style.display = '';
     document.getElementById('user-pseudo').textContent = user.email.split('@')[0];
-    
-    // Charger la configuration
-    loadConfig();
+
+    await loadConfig();
   } else {
     currentUser = null;
     isAdmin = false;
