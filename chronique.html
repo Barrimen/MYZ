@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Chronique — MYZ</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="myz-theme.css">
+<script src="theme-init.js"></script>
+<style>
+
+/* ── LAYOUT ── */
+
+body {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+
+.chr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  flex-shrink: 0;
+  gap: 12px;
+  z-index: 100;
+}
+
+.chr-header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.back-link {
+  color: var(--text3);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  transition: color 0.18s;
+  letter-spacing: 0.03em;
+}
+.back-link:hover { color: var(--gold); }
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  color: var(--gold2);
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+}
+
+.auth-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+}
+
+.auth-user-name { color: var(--gold); font-weight: 700; }
+
+/* ── TIMELINE ── */
+
+.timeline-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 7px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+}
+
+.timeline-bar::-webkit-scrollbar { height: 3px; }
+.timeline-bar::-webkit-scrollbar-thumb { background: var(--border2); }
+
+.tl-label {
+  font-size: 0.625rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.tl-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tl-pill:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--surface3);
+}
+
+.tl-pill.active {
+  background: rgba(199, 144, 30, 0.15);
+  border-color: var(--gold);
+  color: var(--gold2);
+  font-weight: 700;
+}
+
+.tl-empty {
+  font-size: 0.75rem;
+  color: var(--text3);
+  font-style: italic;
+}
+
+/* ── MAIN ── */
+
+.chr-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR GAUCHE ── */
+
+.chr-left {
+  width: 250px;
+  min-width: 250px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chr-left-top {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.chr-left-top .page-sub {
+  font-size: 0.625rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+}
+
+/* Filtres */
+
+.filters {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.filter-section-title {
+  font-size: 0.5625rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 5px;
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.ftag {
+  padding: 2px 7px;
+  font-size: 0.625rem;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-body);
+  letter-spacing: 0.04em;
+  transition: all 0.13s;
+}
+
+.ftag:hover  { border-color: var(--gold); color: var(--gold); }
+.ftag.active { border-color: var(--gold); color: var(--gold); background: rgba(199,144,30,0.1); }
+
+.filter-pjs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+}
+
+.filter-pj-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text2);
+  cursor: pointer;
+}
+
+.filter-pj-item input { width: auto; margin: 0; }
+
+/* Liste séances */
+
+.seance-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.seance-item {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.14s;
+  position: relative;
+}
+
+.seance-item:hover { background: var(--surface2); }
+.seance-item.active { background: rgba(199,144,30,0.07); border-left: 2px solid var(--gold); padding-left: 10px; }
+
+.si-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.si-num {
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.si-title {
+  font-size: 0.8125rem;
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.si-meta {
+  font-size: 0.625rem;
+  color: var(--text3);
+  margin-bottom: 3px;
+}
+
+.si-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.tag-chip {
+  font-size: 0.5625rem;
+  padding: 1px 5px;
+  border: 1px solid;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── CENTRE ── */
+
+.chr-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Empty state */
+
+.chr-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
+  user-select: none;
+}
+
+.chr-empty-icon { font-size: 48px; opacity: 0.25; margin-bottom: 12px; }
+.chr-empty-title { font-family: var(--font-display); font-size: 1rem; letter-spacing: 0.05em; opacity: 0.6; }
+.chr-empty-sub { font-size: 0.75rem; margin-top: 6px; opacity: 0.4; }
+
+/* Content area */
+
+.seance-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+  display: none;
+}
+
+.seance-content.visible { display: block; }
+
+/* ── VIEW MODE ── */
+
+.view-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.view-number {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+
+.view-title {
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  color: var(--gold2);
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.view-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.8125rem;
+  color: var(--text2);
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.view-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.view-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.view-resume-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--gold);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+/* Markdown rendered content */
+
+.md-content p {
+  color: var(--text);
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+
+.md-content p:last-child { margin-bottom: 0; }
+
+.md-content h2, .md-content h3, .md-content h4, .md-content h5 {
+  font-family: var(--font-display);
+  color: var(--gold2);
+  margin: 16px 0 6px;
+  letter-spacing: 0.04em;
+}
+
+.md-content h2 { font-size: 1.25rem; }
+.md-content h3 { font-size: 1.125rem; }
+.md-content h4, .md-content h5 { font-size: 1rem; }
+
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--text2); font-style: italic; }
+
+/* ── EDIT MODE ── */
+
+.edit-wrap {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  height: 100%;
+}
+
+.edit-wrap.visible {
+  display: flex;
+}
+
+.edit-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.edit-fields {
+  padding: 16px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 70px 1fr auto auto;
+  gap: 10px;
+  align-items: end;
+  flex-shrink: 0;
+}
+
+.edit-field label {
+  font-size: 0.5625rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.edit-field input, .edit-field select {
+  width: 100%;
+}
+
+.edit-pj-tags {
+  padding: 10px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.edit-pj-tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.edit-pj-tags-section label {
+  font-size: 0.5625rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0;
+}
+
+.pj-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pj-check-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--text2);
+  cursor: pointer;
+}
+
+.pj-check-item input { width: auto; margin: 0; cursor: pointer; }
+
+.pj-custom-input {
+  width: 110px !important;
+  font-size: 0.75rem;
+}
+
+.tag-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ttag {
+  padding: 3px 9px;
+  font-size: 0.6875rem;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-body);
+  letter-spacing: 0.04em;
+  transition: all 0.13s;
+}
+
+.ttag.active { font-weight: 700; }
+
+.edit-resume-area {
+  flex: 1;
+  padding: 16px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.edit-md-hint {
+  font-size: 0.6875rem;
+  color: var(--text3);
+  letter-spacing: 0.03em;
+}
+
+.edit-resume-area textarea {
+  flex: 1;
+  resize: none;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  min-height: 0;
+}
+
+/* ── SIDEBAR DROITE ── */
+
+.chr-right {
+  width: 220px;
+  min-width: 220px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.22s ease, min-width 0.22s ease;
+}
+
+.chr-right.collapsed {
+  width: 34px;
+  min-width: 34px;
+}
+
+.chr-right-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  gap: 6px;
+}
+
+.chr-right-header:hover { background: var(--surface2); }
+
+.chr-right-title {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  color: var(--gold2);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.right-arrow {
+  color: var(--text3);
+  font-size: 0.6875rem;
+  flex-shrink: 0;
+  transition: transform 0.22s;
+}
+
+.chr-right.collapsed .right-arrow { transform: rotate(180deg); }
+
+.chr-right-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.chr-right.collapsed .chr-right-body { display: none; }
+
+.moment-add-btns {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.moment-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-align: left;
+  transition: all 0.13s;
+}
+
+.moment-type-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(199,144,30,0.07);
+}
+
+.moments-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.moment-item {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.moment-item:last-child { border-bottom: none; }
+
+.moment-type-label {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.moment-contenu {
+  font-size: 0.75rem;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.moment-meta {
+  font-size: 0.5625rem;
+  color: var(--text3);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-del-moment {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 0.6875rem;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.13s;
+}
+
+.btn-del-moment:hover { color: var(--red2); }
+
+.moments-empty {
+  padding: 16px 10px;
+  font-size: 0.75rem;
+  color: var(--text3);
+  text-align: center;
+}
+
+/* ── MODALES ── */
+
+.ef {
+  margin-bottom: 14px;
+}
+.ef:last-of-type { margin-bottom: 0; }
+
+.ef label {
+  font-size: 0.625rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.ef input, .ef select, .ef textarea { width: 100%; }
+
+/* ── COULEURS TAGS ── */
+
+.tag-Combat      { color: #bf3522; border-color: #bf3522; }
+.tag-Exploration { color: #489754; border-color: #489754; }
+.tag-Politique   { color: #3d82be; border-color: #3d82be; }
+.tag-Drame       { color: #cc6a08; border-color: #cc6a08; }
+.tag-Découverte  { color: #c7901e; border-color: #c7901e; }
+
+.ttag[data-tag="Combat"].active      { border-color: #bf3522; color: #bf3522; background: rgba(191,53,34,0.1); }
+.ttag[data-tag="Exploration"].active { border-color: #489754; color: #489754; background: rgba(72,151,84,0.1); }
+.ttag[data-tag="Politique"].active   { border-color: #3d82be; color: #3d82be; background: rgba(61,130,190,0.1); }
+.ttag[data-tag="Drame"].active       { border-color: #cc6a08; color: #cc6a08; background: rgba(204,106,8,0.1); }
+.ttag[data-tag="Découverte"].active  { border-color: #c7901e; color: #c7901e; background: rgba(199,144,30,0.1); }
+
+.ftag[data-tag="Combat"].active      { border-color: #bf3522; color: #bf3522; }
+.ftag[data-tag="Exploration"].active { border-color: #489754; color: #489754; }
+.ftag[data-tag="Politique"].active   { border-color: #3d82be; color: #3d82be; }
+.ftag[data-tag="Drame"].active       { border-color: #cc6a08; color: #cc6a08; }
+.ftag[data-tag="Découverte"].active  { border-color: #c7901e; color: #c7901e; }
+
+/* ── COULEURS MOMENTS ── */
+
+.moment-lieu        { color: #489754; }
+.moment-pnj         { color: #3d82be; }
+.moment-revelation  { color: #c7901e; }
+.moment-memorable   { color: #bf3522; }
+
+/* ── TOAST ── */
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  padding: 9px 16px;
+  font-size: 0.875rem;
+  color: var(--text);
+  z-index: 99999;
+  transform: translateX(130%);
+  transition: transform 0.28s ease;
+  max-width: 280px;
+  line-height: 1.4;
+}
+
+.toast.show { transform: translateX(0); }
+.toast.error { border-left-color: var(--red2); }
+.toast.success { border-left-color: var(--green2); }
+
+</style>
+</head>
+<body>
+
+<!-- ════════════════ HEADER ════════════════ -->
+<header class="chr-header">
+  <div class="chr-header-left">
+    <a href="index.html" class="back-link">⬅ Accueil</a>
+    <div class="page-title">📖 La Chronique du Peuple</div>
+  </div>
+  <div class="auth-area" id="auth-area"><!-- JS --></div>
+</header>
+
+<!-- ════════════════ TIMELINE ════════════════ -->
+<div class="timeline-bar" id="timeline-bar">
+  <span class="tl-label">Frise ·</span>
+  <span class="tl-empty" id="tl-empty">Aucune séance</span>
+</div>
+
+<!-- ════════════════ MAIN ════════════════ -->
+<div class="chr-main">
+
+  <!-- ── SIDEBAR GAUCHE ── -->
+  <div class="chr-left">
+
+    <div class="chr-left-top">
+      <div class="page-sub">Séances de campagne</div>
+      <button class="btn btn-sm primary" id="btn-new-seance" style="width:100%;display:none;">+ Nouvelle séance</button>
+    </div>
+
+    <div class="filters">
+      <div class="filter-section-title">Filtrer par tag</div>
+      <div class="filter-tags">
+        <button class="ftag" data-tag="Combat">Combat</button>
+        <button class="ftag" data-tag="Exploration">Exploration</button>
+        <button class="ftag" data-tag="Politique">Politique</button>
+        <button class="ftag" data-tag="Drame">Drame</button>
+        <button class="ftag" data-tag="Découverte">Découverte</button>
+      </div>
+      <div class="filter-section-title">Filtrer par PJ</div>
+      <div class="filter-pjs" id="filter-pjs">
+        <label class="filter-pj-item"><input type="checkbox" class="fpj" value="Dust"> Dust</label>
+        <label class="filter-pj-item"><input type="checkbox" class="fpj" value="Borka"> Borka</label>
+        <label class="filter-pj-item"><input type="checkbox" class="fpj" value="Bolt"> Bolt</label>
+      </div>
+    </div>
+
+    <div class="seance-list" id="seance-list">
+      <div style="padding:20px 12px;font-size:.75rem;color:var(--text3);text-align:center;">
+        Chargement…
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── ZONE CENTRALE ── -->
+  <div class="chr-center">
+
+    <!-- Empty state -->
+    <div class="chr-empty" id="chr-empty">
+      <div class="chr-empty-icon">📖</div>
+      <div class="chr-empty-title">La chronique attend d'être écrite</div>
+      <div class="chr-empty-sub" id="empty-sub">Sélectionnez une séance ou créez-en une nouvelle</div>
+    </div>
+
+    <!-- Contenu séance -->
+    <div class="seance-content" id="seance-content">
+
+      <!-- View mode -->
+      <div id="view-mode">
+        <div class="view-header">
+          <div>
+            <div class="view-number" id="v-number">Séance #—</div>
+            <div class="view-title" id="v-title">—</div>
+            <div class="view-meta">
+              <span class="view-meta-item" id="v-date"></span>
+              <span class="view-meta-item" id="v-pjs"></span>
+            </div>
+            <div class="view-tags" id="v-tags"></div>
+          </div>
+          <div style="flex-shrink:0;display:flex;gap:6px;align-items:flex-start;">
+            <button class="btn btn-sm danger" id="btn-delete-seance" style="display:none;">Supprimer</button>
+            <button class="btn btn-sm primary" id="btn-edit" style="display:none;">✏ Éditer</button>
+          </div>
+        </div>
+        <div class="view-resume-wrap">
+          <div class="md-content" id="v-resume"></div>
+        </div>
+      </div>
+
+      <!-- Edit mode -->
+      <div id="edit-mode" style="display:none;height:100%;display:none;flex-direction:column;margin:-20px -28px;height:calc(100% + 40px);">
+
+        <div class="edit-top-bar">
+          <button class="btn btn-sm primary" id="btn-save">💾 Sauvegarder</button>
+          <button class="btn btn-sm" id="btn-cancel">✖ Annuler</button>
+          <span style="font-size:.75rem;color:var(--text3);margin-left:4px;">Mode édition</span>
+        </div>
+
+        <div class="edit-fields">
+          <div class="edit-field">
+            <label>N°</label>
+            <input type="number" id="e-numero" min="1" style="width:60px;">
+          </div>
+          <div class="edit-field">
+            <label>Titre</label>
+            <input type="text" id="e-titre" placeholder="Titre de la séance">
+          </div>
+          <div class="edit-field">
+            <label>Date</label>
+            <input type="date" id="e-date">
+          </div>
+        </div>
+
+        <div class="edit-pj-tags">
+          <div class="edit-pj-tags-section">
+            <label>PJ présents</label>
+            <div class="pj-checks">
+              <label class="pj-check-item"><input type="checkbox" class="epj" value="Dust"> Dust</label>
+              <label class="pj-check-item"><input type="checkbox" class="epj" value="Borka"> Borka</label>
+              <label class="pj-check-item"><input type="checkbox" class="epj" value="Bolt"> Bolt</label>
+              <input type="text" class="pj-custom-input" id="e-pj-custom" placeholder="+ Autre…" title="Appuyez sur Entrée pour ajouter">
+            </div>
+            <div id="e-pj-custom-chips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
+          </div>
+
+          <div class="edit-pj-tags-section">
+            <label>Tags</label>
+            <div class="tag-toggle-row" id="e-tags-row">
+              <button type="button" class="ttag" data-tag="Combat">Combat</button>
+              <button type="button" class="ttag" data-tag="Exploration">Exploration</button>
+              <button type="button" class="ttag" data-tag="Politique">Politique</button>
+              <button type="button" class="ttag" data-tag="Drame">Drame</button>
+              <button type="button" class="ttag" data-tag="Découverte">Découverte</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="edit-resume-area">
+          <div class="edit-md-hint">Supporte **gras**, *italique*, # Titre, ## Sous-titre</div>
+          <textarea id="e-resume" placeholder="Rédigez le résumé de la séance…"></textarea>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ── SIDEBAR DROITE ── -->
+  <div class="chr-right" id="chr-right">
+    <div class="chr-right-header" id="chr-right-toggle">
+      <div class="chr-right-title">Moments</div>
+      <span class="right-arrow">◀</span>
+    </div>
+    <div class="chr-right-body">
+      <div class="moment-add-btns" id="moment-add-btns">
+        <button class="moment-type-btn" data-type="lieu">📍 Ajouter un lieu</button>
+        <button class="moment-type-btn" data-type="pnj">👤 Ajouter un PNJ</button>
+        <button class="moment-type-btn" data-type="revelation">💡 Révélation</button>
+        <button class="moment-type-btn" data-type="memorable">⭐ Moment mémorable</button>
+      </div>
+      <div class="moments-list" id="moments-list">
+        <div class="moments-empty">Sélectionnez une séance.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /chr-main -->
+
+<!-- ════════════════ TOAST ════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════ MODALE : Login ════════════ -->
+<div class="modal-overlay" id="modal-login">
+  <div class="modal-box" style="max-width:320px;">
+    <div class="modal-title">Connexion</div>
+    <div class="modal-sub">Accès écriture</div>
+    <form id="login-form">
+      <div class="ef">
+        <label>E-mail</label>
+        <input type="email" id="li-email" autocomplete="email" required>
+      </div>
+      <div class="ef">
+        <label>Mot de passe</label>
+        <input type="password" id="li-pwd" autocomplete="current-password" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="li-cancel">Annuler</button>
+        <button type="submit" class="btn primary" id="li-submit">Se connecter</button>
+      </div>
+      <div id="li-err" style="font-size:.75rem;color:var(--red2);margin-top:8px;min-height:14px;text-align:center;"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════ MODALE : Nouvelle séance ════════════ -->
+<div class="modal-overlay" id="modal-new-seance">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-title">Nouvelle séance</div>
+    <div class="modal-sub">Ajouter à la chronique</div>
+    <div class="grid-2">
+      <div class="ef">
+        <label>N° de séance</label>
+        <input type="number" id="ns-numero" min="1" placeholder="1">
+      </div>
+      <div class="ef">
+        <label>Date de séance</label>
+        <input type="date" id="ns-date">
+      </div>
+    </div>
+    <div class="ef">
+      <label>Titre</label>
+      <input type="text" id="ns-titre" placeholder="Ex : La nuit à l'Arche…" required>
+    </div>
+    <div class="ef">
+      <label>PJ présents</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+        <label class="pj-check-item"><input type="checkbox" class="nspj" value="Dust"> Dust</label>
+        <label class="pj-check-item"><input type="checkbox" class="nspj" value="Borka"> Borka</label>
+        <label class="pj-check-item"><input type="checkbox" class="nspj" value="Bolt"> Bolt</label>
+        <input type="text" id="ns-pj-custom" class="pj-custom-input" placeholder="+ Autre…" title="Appuyez sur Entrée">
+      </div>
+      <div id="ns-pj-chips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+    </div>
+    <div class="ef">
+      <label>Tags</label>
+      <div class="tag-toggle-row" id="ns-tags-row">
+        <button type="button" class="ttag" data-tag="Combat">Combat</button>
+        <button type="button" class="ttag" data-tag="Exploration">Exploration</button>
+        <button type="button" class="ttag" data-tag="Politique">Politique</button>
+        <button type="button" class="ttag" data-tag="Drame">Drame</button>
+        <button type="button" class="ttag" data-tag="Découverte">Découverte</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="ns-cancel">Annuler</button>
+      <button class="btn primary" id="ns-confirm">Créer la séance</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ MODALE : Ajouter moment ════════════ -->
+<div class="modal-overlay" id="modal-add-moment">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-title" id="am-title">Ajouter un moment</div>
+    <div class="modal-sub" id="am-sub">—</div>
+    <div class="ef">
+      <label>Description</label>
+      <textarea id="am-contenu" rows="4" placeholder="Décrivez ce moment…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="am-cancel">Annuler</button>
+      <button class="btn primary" id="am-confirm">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SCRIPT ════════════════ -->
+<script type="module">
+import { auth, db, ADMIN_UID, loginUser, logoutUser, onAuthStateChanged } from './auth-init.js';
+import { collection, doc, addDoc, updateDoc, deleteDoc,
+         onSnapshot, query, orderBy, where, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+/* ── COLLECTIONS ── */
+const seancesCol = () => collection(db, 'chronique', 'data', 'seances');
+const momentsCol = () => collection(db, 'chronique', 'data', 'moments');
+const seanceRef  = id => doc(db, 'chronique', 'data', 'seances', id);
+const momentRef  = id => doc(db, 'chronique', 'data', 'moments', id);
+
+/* ── ÉTAT ── */
+let currentUser      = null;
+let isAdmin          = false;
+let seancesData      = {};          // id → data
+let currentSeanceId  = null;
+let momentsUnsub     = null;
+let isEditing        = false;
+let customPJsEdit    = [];          // PJs custom en mode édition
+let customPJsNew     = [];          // PJs custom en modale nouvelle séance
+let pendingMomentType = null;
+
+/* ── CONSTANTES ── */
+const TAGS    = ['Combat', 'Exploration', 'Politique', 'Drame', 'Découverte'];
+const MOMENT_LABELS = { lieu: '📍 Lieu', pnj: '👤 PNJ', revelation: '💡 Révélation', memorable: '⭐ Mémorable' };
+
+/* ── UTILS ── */
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast show ${type}`;
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function fmtDate(str) {
+  if (!str) return '';
+  const [y, m, d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function fmtTs(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+    + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function authorName() {
+  return currentUser ? currentUser.email.split('@')[0] : '?';
+}
+
+/* ── MARKDOWN ── */
+
+function renderMd(raw) {
+  if (!raw || !raw.trim()) {
+    return '<em style="color:var(--text3)">Aucun résumé — cliquez sur ✏ Éditer pour commencer.</em>';
+  }
+  let t = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Inline: bold and italic (before headers)
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Split into blocks by double newline
+  const blocks = t.split(/\n\n+/);
+  return blocks.map(block => {
+    block = block.trim();
+    if (!block) return '';
+    // Check for header
+    const h2 = block.match(/^## (.+)$/m);
+    const h3 = block.match(/^### (.+)$/m);
+    const h4 = block.match(/^#### (.+)$/m);
+    const h1 = block.match(/^# (.+)$/m);
+    if (h1)  return `<h2>${h1[1]}</h2>`;
+    if (h2)  return `<h3>${h2[1]}</h3>`;
+    if (h3)  return `<h4>${h3[1]}</h4>`;
+    if (h4)  return `<h5>${h4[1]}</h5>`;
+    return '<p>' + block.replace(/\n/g, '<br>') + '</p>';
+  }).filter(Boolean).join('\n');
+}
+
+/* ── COULEUR TAG ── */
+
+function tagClass(tag) {
+  return 'tag-chip tag-' + tag;
+}
+
+/* ── LISTENERS FIRESTORE ── */
+
+function startSeancesListener() {
+  onSnapshot(
+    query(seancesCol(), orderBy('numero', 'desc')),
+    snap => {
+      seancesData = {};
+      snap.docs.forEach(d => { seancesData[d.id] = { id: d.id, ...d.data() }; });
+      renderSidebar();
+      renderTimeline();
+      if (currentSeanceId && seancesData[currentSeanceId]) {
+        if (!isEditing) renderViewMode(currentSeanceId);
+      } else if (currentSeanceId) {
+        currentSeanceId = null;
+        showEmpty();
+      }
+    },
+    err => console.error('seances:', err)
+  );
+}
+
+function startMomentsListener(seanceId) {
+  if (momentsUnsub) { momentsUnsub(); momentsUnsub = null; }
+  momentsUnsub = onSnapshot(
+    query(momentsCol(), where('seanceId', '==', seanceId)),
+    snap => {
+      const moments = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
+      renderMomentsList(moments);
+    },
+    err => console.error('moments:', err)
+  );
+}
+
+/* ── RENDER : TIMELINE ── */
+
+function renderTimeline() {
+  const bar = document.getElementById('timeline-bar');
+  const seances = Object.values(seancesData).sort((a, b) => a.numero - b.numero);
+  const emptyEl = document.getElementById('tl-empty');
+
+  // Remove old pills (keep label + empty span)
+  bar.querySelectorAll('.tl-pill').forEach(el => el.remove());
+
+  if (!seances.length) {
+    emptyEl.style.display = '';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  seances.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'tl-pill' + (s.id === currentSeanceId ? ' active' : '');
+    btn.dataset.id = s.id;
+    btn.title = `#${s.numero} — ${s.titre || '(sans titre)'}`;
+    btn.textContent = s.numero;
+    btn.addEventListener('click', () => selectSeance(s.id));
+    bar.appendChild(btn);
+  });
+}
+
+/* ── RENDER : SIDEBAR ── */
+
+function getFilteredSeances() {
+  const activeTags = [...document.querySelectorAll('.ftag.active')].map(b => b.dataset.tag);
+  const activePJs  = [...document.querySelectorAll('.fpj:checked')].map(cb => cb.value);
+  return Object.values(seancesData)
+    .filter(s => {
+      if (activeTags.length && !activeTags.some(t => (s.tags || []).includes(t))) return false;
+      if (activePJs.length  && !activePJs.some(p  => (s.pjPresents || []).includes(p))) return false;
+      return true;
+    })
+    .sort((a, b) => b.numero - a.numero);
+}
+
+function renderSidebar() {
+  const list = document.getElementById('seance-list');
+  const seances = getFilteredSeances();
+
+  if (!seances.length) {
+    list.innerHTML = '<div style="padding:20px 12px;font-size:.75rem;color:var(--text3);text-align:center;">Aucune séance.</div>';
+    return;
+  }
+
+  list.innerHTML = seances.map(s => {
+    const tagsHtml = (s.tags || []).map(t =>
+      `<span class="${tagClass(t)}">${t}</span>`
+    ).join('');
+    const pjStr = (s.pjPresents || []).join(', ') || '—';
+    return `
+      <div class="seance-item ${s.id === currentSeanceId ? 'active' : ''}"
+           data-id="${s.id}">
+        <div class="si-header">
+          <span class="si-num">#${s.numero}</span>
+          <span class="si-title">${s.titre || '(sans titre)'}</span>
+        </div>
+        <div class="si-meta">
+          ${s.dateSeance ? '📅 ' + fmtDate(s.dateSeance) + ' · ' : ''}👥 ${pjStr}
+        </div>
+        ${tagsHtml ? `<div class="si-tags">${tagsHtml}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.seance-item').forEach(el => {
+    el.addEventListener('click', () => selectSeance(el.dataset.id));
+  });
+}
+
+/* ── SELECT SÉANCE ── */
+
+function selectSeance(id) {
+  if (isEditing && !confirm('Quitter le mode édition sans sauvegarder ?')) return;
+  if (isEditing) exitEditMode();
+
+  currentSeanceId = id;
+  renderSidebar();
+  renderTimeline();
+  renderViewMode(id);
+  startMomentsListener(id);
+}
+
+/* ── RENDER : VIEW MODE ── */
+
+function showEmpty() {
+  document.getElementById('chr-empty').style.display  = '';
+  document.getElementById('seance-content').style.display = 'none';
+  document.getElementById('view-mode').style.display = '';
+  document.getElementById('edit-mode').style.display = 'none';
+}
+
+function renderViewMode(id) {
+  const s = seancesData[id];
+  if (!s) return;
+
+  document.getElementById('chr-empty').style.display       = 'none';
+  document.getElementById('seance-content').style.display  = 'block';
+  document.getElementById('seance-content').classList.add('visible');
+  document.getElementById('view-mode').style.display       = '';
+  document.getElementById('edit-mode').style.display       = 'none';
+  isEditing = false;
+
+  document.getElementById('v-number').textContent = `Séance #${s.numero}`;
+  document.getElementById('v-title').textContent  = s.titre || '(sans titre)';
+
+  const dateEl = document.getElementById('v-date');
+  dateEl.textContent = s.dateSeance ? '📅 ' + fmtDate(s.dateSeance) : '';
+
+  const pjEl = document.getElementById('v-pjs');
+  const pjs = (s.pjPresents || []);
+  pjEl.textContent = pjs.length ? '👥 ' + pjs.join(', ') : '';
+
+  const tagsEl = document.getElementById('v-tags');
+  tagsEl.innerHTML = (s.tags || []).map(t =>
+    `<span class="${tagClass(t)}">${t}</span>`
+  ).join('');
+
+  document.getElementById('v-resume').innerHTML = renderMd(s.resume || '');
+
+  document.getElementById('btn-edit').style.display =
+    currentUser ? '' : 'none';
+  document.getElementById('btn-delete-seance').style.display =
+    isAdmin ? '' : 'none';
+}
+
+/* ── EDIT MODE ── */
+
+function enterEditMode() {
+  if (!currentUser || !currentSeanceId) return;
+  const s = seancesData[currentSeanceId];
+  if (!s) return;
+  isEditing = true;
+
+  // Populate fields
+  document.getElementById('e-numero').value = s.numero || '';
+  document.getElementById('e-titre').value  = s.titre  || '';
+  document.getElementById('e-date').value   = s.dateSeance || '';
+  document.getElementById('e-resume').value = s.resume || '';
+
+  // PJs
+  const pjs = s.pjPresents || [];
+  document.querySelectorAll('.epj').forEach(cb => {
+    cb.checked = pjs.includes(cb.value);
+  });
+  customPJsEdit = pjs.filter(p => !['Dust', 'Borka', 'Bolt'].includes(p));
+  renderCustomPJChips('e-pj-custom-chips', customPJsEdit, 'edit');
+
+  // Tags
+  document.querySelectorAll('#e-tags-row .ttag').forEach(btn => {
+    btn.classList.toggle('active', (s.tags || []).includes(btn.dataset.tag));
+  });
+
+  document.getElementById('view-mode').style.display = 'none';
+  document.getElementById('edit-mode').style.display = 'flex';
+}
+
+function exitEditMode() {
+  isEditing = false;
+  if (currentSeanceId && seancesData[currentSeanceId]) {
+    renderViewMode(currentSeanceId);
+  } else {
+    showEmpty();
+  }
+}
+
+async function saveEdit() {
+  if (!currentUser || !currentSeanceId) return;
+  const numero  = parseInt(document.getElementById('e-numero').value) || 1;
+  const titre   = document.getElementById('e-titre').value.trim();
+  const date    = document.getElementById('e-date').value;
+  const resume  = document.getElementById('e-resume').value;
+  const checked = [...document.querySelectorAll('.epj:checked')].map(cb => cb.value);
+  const pjs     = [...checked, ...customPJsEdit];
+  const tags    = [...document.querySelectorAll('#e-tags-row .ttag.active')].map(b => b.dataset.tag);
+
+  if (!titre) { showToast('Le titre est requis', 'error'); return; }
+
+  try {
+    await updateDoc(seanceRef(currentSeanceId), {
+      numero, titre,
+      dateSeance: date,
+      resume, pjPresents: pjs, tags,
+      updatedAt: serverTimestamp()
+    });
+    exitEditMode();
+    showToast('Séance sauvegardée');
+  } catch (e) {
+    console.error(e);
+    showToast('Erreur lors de la sauvegarde', 'error');
+  }
+}
+
+/* ── CUSTOM PJ CHIPS ── */
+
+function renderCustomPJChips(containerId, list, context) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = list.map((p, i) => `
+    <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;
+      background:var(--surface3);border:1px solid var(--border2);font-size:.6875rem;color:var(--text2);">
+      ${p}
+      <button type="button" style="background:none;border:none;color:var(--text3);cursor:pointer;
+        font-size:.625rem;padding:0;line-height:1;" data-ctx="${context}" data-idx="${i}">✖</button>
+    </span>
+  `).join('');
+  el.querySelectorAll('button[data-ctx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      if (btn.dataset.ctx === 'edit') {
+        customPJsEdit.splice(idx, 1);
+        renderCustomPJChips(containerId, customPJsEdit, context);
+      } else {
+        customPJsNew.splice(idx, 1);
+        renderCustomPJChips(containerId, customPJsNew, context);
+      }
+    });
+  });
+}
+
+function bindCustomPJInput(inputId, chipsId, list, context) {
+  document.getElementById(inputId).addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = e.target.value.trim().replace(/,$/, '');
+      if (val && !list.includes(val)) { list.push(val); }
+      e.target.value = '';
+      renderCustomPJChips(chipsId, list, context);
+    }
+  });
+}
+
+/* ── RENDER : MOMENTS ── */
+
+function renderMomentsList(moments) {
+  const list = document.getElementById('moments-list');
+  if (!moments.length) {
+    list.innerHTML = '<div class="moments-empty">Aucun moment enregistré.</div>';
+    return;
+  }
+  list.innerHTML = moments.map(m => `
+    <div class="moment-item">
+      <div class="moment-type-label moment-${m.type}">
+        ${MOMENT_LABELS[m.type] || m.type}
+      </div>
+      <div class="moment-contenu">${escHtml(m.contenu || '')}</div>
+      <div class="moment-meta">
+        <span>${m.createdBy || '?'} · ${fmtTs(m.createdAt)}</span>
+        ${isAdmin || (currentUser && m.createdBy === authorName())
+          ? `<button class="btn-del-moment" data-id="${m.id}" title="Supprimer">✖</button>`
+          : ''}
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.btn-del-moment').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Supprimer ce moment ?')) return;
+      try {
+        await deleteDoc(momentRef(btn.dataset.id));
+        showToast('Moment supprimé');
+      } catch (e) { showToast('Erreur', 'error'); }
+    });
+  });
+}
+
+function escHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ── NOUVELLE SÉANCE ── */
+
+let nsTags = [];
+
+function openNewSeanceModal() {
+  if (!currentUser) { openModal('modal-login'); return; }
+  // Auto-numéro
+  const nums = Object.values(seancesData).map(s => s.numero || 0);
+  document.getElementById('ns-numero').value = nums.length ? Math.max(...nums) + 1 : 1;
+  document.getElementById('ns-titre').value  = '';
+  document.getElementById('ns-date').value   = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('.nspj').forEach(cb => cb.checked = false);
+  customPJsNew = [];
+  renderCustomPJChips('ns-pj-chips', customPJsNew, 'new');
+  document.querySelectorAll('#ns-tags-row .ttag').forEach(b => b.classList.remove('active'));
+  openModal('modal-new-seance');
+  document.getElementById('ns-titre').focus();
+}
+
+document.getElementById('ns-cancel').addEventListener('click', () => closeModal('modal-new-seance'));
+document.getElementById('btn-new-seance').addEventListener('click', openNewSeanceModal);
+
+document.getElementById('ns-confirm').addEventListener('click', async () => {
+  if (!currentUser) return;
+  const titre = document.getElementById('ns-titre').value.trim();
+  if (!titre) { showToast('Le titre est requis', 'error'); return; }
+  const numero  = parseInt(document.getElementById('ns-numero').value) || 1;
+  const date    = document.getElementById('ns-date').value;
+  const checked = [...document.querySelectorAll('.nspj:checked')].map(cb => cb.value);
+  const pjs     = [...checked, ...customPJsNew];
+  const tags    = [...document.querySelectorAll('#ns-tags-row .ttag.active')].map(b => b.dataset.tag);
+
+  try {
+    const ref = await addDoc(seancesCol(), {
+      numero, titre,
+      dateSeance: date,
+      resume: '',
+      pjPresents: pjs,
+      tags,
+      createdBy: authorName(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    closeModal('modal-new-seance');
+    showToast(`Séance #${numero} créée`);
+    selectSeance(ref.id);
+  } catch (e) {
+    console.error(e);
+    showToast('Erreur lors de la création', 'error');
+  }
+});
+
+/* ── SUPPRIMER SÉANCE ── */
+
+document.getElementById('btn-delete-seance').addEventListener('click', async () => {
+  const s = seancesData[currentSeanceId];
+  if (!s || !confirm(`Supprimer la séance #${s.numero} "${s.titre}" et tous ses moments ?`)) return;
+  try {
+    // Supprimer les moments associés
+    const snap = await new Promise((res, rej) => {
+      const unsub = onSnapshot(
+        query(momentsCol(), where('seanceId', '==', currentSeanceId)),
+        s => { unsub(); res(s); }, rej
+      );
+    });
+    for (const d of snap.docs) await deleteDoc(momentRef(d.id));
+    await deleteDoc(seanceRef(currentSeanceId));
+    currentSeanceId = null;
+    showEmpty();
+    showToast('Séance supprimée');
+  } catch (e) {
+    console.error(e);
+    showToast('Erreur suppression', 'error');
+  }
+});
+
+/* ── AJOUTER MOMENT ── */
+
+document.querySelectorAll('.moment-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (!currentUser) { openModal('modal-login'); return; }
+    if (!currentSeanceId) { showToast('Sélectionnez une séance d\'abord', 'error'); return; }
+    const type = btn.dataset.type;
+    pendingMomentType = type;
+    document.getElementById('am-title').textContent = MOMENT_LABELS[type] || 'Moment';
+    document.getElementById('am-sub').textContent   = `Associé à la séance #${seancesData[currentSeanceId]?.numero || '?'}`;
+    document.getElementById('am-contenu').value     = '';
+    openModal('modal-add-moment');
+    document.getElementById('am-contenu').focus();
+  });
+});
+
+document.getElementById('am-cancel').addEventListener('click', () => closeModal('modal-add-moment'));
+
+document.getElementById('am-confirm').addEventListener('click', async () => {
+  if (!currentUser) return;
+  const contenu = document.getElementById('am-contenu').value.trim();
+  if (!contenu) { showToast('La description est requise', 'error'); return; }
+  try {
+    await addDoc(momentsCol(), {
+      type: pendingMomentType,
+      contenu,
+      seanceId: currentSeanceId,
+      createdBy: authorName(),
+      createdAt: serverTimestamp()
+    });
+    closeModal('modal-add-moment');
+    showToast('Moment ajouté');
+  } catch (e) {
+    console.error(e);
+    showToast('Erreur lors de l\'ajout', 'error');
+  }
+});
+
+/* ── EVENTS : ÉDITEUR ── */
+
+document.getElementById('btn-edit').addEventListener('click', enterEditMode);
+document.getElementById('btn-save').addEventListener('click', saveEdit);
+document.getElementById('btn-cancel').addEventListener('click', () => {
+  if (confirm('Annuler les modifications ?')) exitEditMode();
+});
+
+document.querySelectorAll('#e-tags-row .ttag').forEach(btn => {
+  btn.addEventListener('click', () => btn.classList.toggle('active'));
+});
+
+bindCustomPJInput('e-pj-custom', 'e-pj-custom-chips', customPJsEdit, 'edit');
+bindCustomPJInput('ns-pj-custom', 'ns-pj-chips', customPJsNew, 'new');
+
+/* ── EVENTS : TAG TOGGLES NOUVELLE SÉANCE ── */
+
+document.querySelectorAll('#ns-tags-row .ttag').forEach(btn => {
+  btn.addEventListener('click', () => btn.classList.toggle('active'));
+});
+
+/* ── EVENTS : FILTRES ── */
+
+document.querySelectorAll('.ftag').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('active');
+    renderSidebar();
+  });
+});
+
+document.querySelectorAll('.fpj').forEach(cb => {
+  cb.addEventListener('change', renderSidebar);
+});
+
+/* ── EVENTS : SIDEBAR DROITE ── */
+
+document.getElementById('chr-right-toggle').addEventListener('click', () => {
+  document.getElementById('chr-right').classList.toggle('collapsed');
+});
+
+/* ── AUTH ── */
+
+function renderAuth(user) {
+  const area = document.getElementById('auth-area');
+  const newBtn = document.getElementById('btn-new-seance');
+  newBtn.style.display = user ? '' : 'none';
+
+  if (user) {
+    area.innerHTML = `
+      <span class="auth-user-name">${user.email.split('@')[0]}</span>
+      ${isAdmin ? '<span style="font-size:.5625rem;color:var(--gold);border:1px solid var(--gold);padding:1px 5px;letter-spacing:.08em;">ADMIN</span>' : ''}
+      <button class="btn btn-sm" id="btn-logout">Déconnexion</button>
+    `;
+    document.getElementById('btn-logout').addEventListener('click', async () => { await logoutUser(); });
+  } else {
+    area.innerHTML = `<button class="btn btn-sm primary" id="btn-login-header">Connexion</button>`;
+    document.getElementById('btn-login-header').addEventListener('click', () => openModal('modal-login'));
+  }
+
+  // Mettre à jour les boutons d'action selon l'état auth
+  if (currentSeanceId && seancesData[currentSeanceId]) {
+    renderViewMode(currentSeanceId);
+  }
+
+  document.getElementById('empty-sub').textContent = user
+    ? 'Sélectionnez une séance ou créez-en une nouvelle'
+    : 'Connectez-vous pour ajouter des séances';
+}
+
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  isAdmin     = user?.uid === ADMIN_UID;
+  renderAuth(user);
+});
+
+/* ── MODALE LOGIN ── */
+
+document.getElementById('li-cancel').addEventListener('click', () => closeModal('modal-login'));
+
+document.getElementById('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('li-submit');
+  const err = document.getElementById('li-err');
+  err.textContent = ''; btn.disabled = true; btn.textContent = 'Connexion…';
+  try {
+    await loginUser(
+      document.getElementById('li-email').value.trim(),
+      document.getElementById('li-pwd').value
+    );
+    closeModal('modal-login');
+    document.getElementById('li-email').value = '';
+    document.getElementById('li-pwd').value   = '';
+  } catch (ex) {
+    err.textContent = ex.code === 'auth/too-many-requests'
+      ? 'Trop de tentatives, réessaie plus tard.'
+      : 'Identifiants incorrects.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Se connecter';
+  }
+});
+
+/* ── FERMETURE MODALES OVERLAY ── */
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+});
+
+/* ── INIT ── */
+startSeancesListener();
+
+</script>
+</body>
+</html>
