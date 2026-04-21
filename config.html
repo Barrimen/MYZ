@@ -595,27 +595,9 @@ body {
 
 <!-- ── FIREBASE + APP ── -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
-  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc }
+import { auth, db, ADMIN_UID, loginUser, logoutUser, onAuthStateChanged } from './auth-init.js';
+import { doc, getDoc, setDoc }
   from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
-/* ── CONFIG FIREBASE ── */
-const firebaseConfig = {
-  apiKey: "AIzaSyBDxi-HmCweLukbYF2KMq9O72yS9PIMoeA",
-  authDomain: "myz-campagne.firebaseapp.com",
-  projectId: "myz-campagne",
-  storageBucket: "myz-campagne.firebasestorage.app",
-  messagingSenderId: "352488409798",
-  appId: "1:352488409798:web:e6d3daa4bc6e8a09a065c7"
-};
-
-const ADMIN_UID = "NQDL7LT3zmewlfSJa69VWY6qSPU2";  // UID du MJ = Admin
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 const themeDocRef = () => doc(db, 'config', 'theme');
 
@@ -798,7 +780,7 @@ loginForm.addEventListener('submit', async (e) => {
   const pwd = document.getElementById('login-password').value;
   
   try {
-    await signInWithEmailAndPassword(auth, email, pwd);
+    await loginUser(email, pwd);
   } catch (err) {
     console.error(err);
     let msg = 'Identifiants incorrects.';
@@ -812,7 +794,7 @@ loginForm.addEventListener('submit', async (e) => {
 
 document.getElementById('logout-btn')?.addEventListener('click', async () => {
   if (confirm('Se déconnecter ?')) {
-    await signOut(auth);
+    await logoutUser();
     location.reload();
   }
 });

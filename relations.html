@@ -369,6 +369,8 @@ body {
   <div class="rel-header-left">
     <a href="index.html" class="back-link">⬅ Accueil</a>
     <div class="page-title">🕸 La Toile des Relations</div>
+    <button class="btn btn-sm primary" id="btn-add-node">+ Personnage</button>
+    <button class="btn btn-sm" id="btn-add-relation">+ Relation</button>
   </div>
   <div class="auth-area" id="auth-area"><!-- JS --></div>
 </header>
@@ -477,7 +479,11 @@ body {
 <div class="modal-overlay" id="modal-edge-add">
   <div class="modal-box">
     <div class="modal-title">Créer une relation</div>
-    <div class="modal-sub" id="ea-sub">Depuis : —</div>
+    <div class="modal-sub" id="ea-sub">—</div>
+    <div class="ef" id="ea-from-field">
+      <label>De</label>
+      <select id="ea-from"></select>
+    </div>
     <div class="ef">
       <label>Vers</label>
       <select id="ea-target"></select>
@@ -564,28 +570,10 @@ body {
 <!-- ═══════════════════════════════════ SCRIPTS ════════════════════════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.9/vis-network.min.js"></script>
 <script type="module">
-import { initializeApp }
-  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
-  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, getDoc, updateDoc, deleteDoc,
+import { auth, db, ADMIN_UID, loginUser, logoutUser, onAuthStateChanged } from './auth-init.js';
+import { collection, doc, addDoc, getDoc, updateDoc, deleteDoc,
          onSnapshot, query, orderBy, limit, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
-/* ── CONFIG FIREBASE ── */
-const firebaseConfig = {
-  apiKey: "AIzaSyBDxi-HmCweLukbYF2KMq9O72yS9PIMoeA",
-  authDomain: "myz-campagne.firebaseapp.com",
-  projectId: "myz-campagne",
-  storageBucket: "myz-campagne.firebasestorage.app",
-  messagingSenderId: "352488409798",
-  appId: "1:352488409798:web:e6d3daa4bc6e8a09a065c7"
-};
-const ADMIN_UID = "NQDL7LT3zmewlfSJa69VWY6qSPU2";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
 
 /* chemins Firestore : relations/graph/{nodes|edges|history}/{id} */
 const nodesCol   = () => collection(db, 'relations', 'graph', 'nodes');
@@ -750,8 +738,8 @@ function updateEmptyState() {
   document.getElementById('graph-empty').style.display = hasNodes ? 'none' : '';
   document.getElementById('graph-hint').style.display  = hasNodes ? '' : 'none';
   document.getElementById('empty-hint').textContent = currentUser
-    ? 'Cliquez sur le graphe pour ajouter un nœud'
-    : 'Connectez-vous pour commencer à tisser';
+    ? 'Cliquez sur le canvas ou utilisez "+ Personnage" pour commencer'
+    : 'Connectez-vous ou cliquez sur "+ Personnage" pour commencer';
 }
 
 /* ── FIRESTORE LISTENERS (temps réel) ── */
@@ -816,7 +804,7 @@ function renderAuthArea(user) {
       <button class="btn btn-sm" id="btn-logout">Déconnexion</button>
     `;
     document.getElementById('btn-logout').addEventListener('click', async () => {
-      await signOut(auth);
+      await logoutUser();
     });
   } else {
     area.innerHTML = `<button class="btn btn-sm primary" id="btn-login">Connexion</button>`;
@@ -842,8 +830,7 @@ document.getElementById('login-form').addEventListener('submit', async e => {
   err.textContent = '';
   btn.disabled = true; btn.textContent = 'Connexion…';
   try {
-    await signInWithEmailAndPassword(
-      auth,
+    await loginUser(
       document.getElementById('li-email').value.trim(),
       document.getElementById('li-pwd').value
     );
@@ -945,6 +932,23 @@ async function deleteNode(nodeId, label) {
   }
 }
 
+/* ── BOUTONS HEADER ── */
+
+document.getElementById('btn-add-node').addEventListener('click', () => {
+  if (!currentUser) { openModal('modal-login'); return; }
+  openModal('modal-node-add');
+  document.getElementById('na-name').focus();
+});
+
+document.getElementById('btn-add-relation').addEventListener('click', () => {
+  if (!currentUser) { openModal('modal-login'); return; }
+  if (nodesDS.length < 2) {
+    showToast('Ajoutez au moins 2 personnages pour créer une relation', 'error');
+    return;
+  }
+  prepareEdgeAdd(null, null); // sélection libre : "De" affiché dans la modale
+});
+
 /* ── MODALE : Lien — Ajout ── */
 
 function setIntensity(groupId, val) {
@@ -963,20 +967,39 @@ document.querySelectorAll('#ea-intensity .sel-btn').forEach(btn => {
 function prepareEdgeAdd(srcId, srcLabel) {
   fromNodeId = srcId;
   selIntensityAdd = 1;
-  document.getElementById('ea-sub').textContent = `Depuis : ${srcLabel}`;
   document.getElementById('ea-type').value = 'Alliance';
   document.getElementById('ea-desc').value = '';
   setIntensity('ea-intensity', 1);
 
-  const sel = document.getElementById('ea-target');
-  sel.innerHTML = '';
-  nodesDS.get().filter(n => n.id !== srcId).forEach(n => {
+  const allNodes = nodesDS.get();
+  const fromField = document.getElementById('ea-from-field');
+
+  if (srcId === null) {
+    // Appel depuis le header : montrer les deux sélecteurs
+    fromField.style.display = '';
+    document.getElementById('ea-sub').textContent = 'Nouvelle relation';
+    const fromSel = document.getElementById('ea-from');
+    fromSel.innerHTML = '';
+    allNodes.forEach(n => {
+      const o = document.createElement('option');
+      o.value = n.id; o.textContent = n.label;
+      fromSel.appendChild(o);
+    });
+  } else {
+    // Appel depuis la fiche d'un nœud : "De" masqué
+    fromField.style.display = 'none';
+    document.getElementById('ea-sub').textContent = `Depuis : ${srcLabel}`;
+  }
+
+  const toSel = document.getElementById('ea-target');
+  toSel.innerHTML = '';
+  allNodes.filter(n => n.id !== srcId).forEach(n => {
     const o = document.createElement('option');
     o.value = n.id; o.textContent = n.label;
-    sel.appendChild(o);
+    toSel.appendChild(o);
   });
 
-  if (!sel.options.length) {
+  if (!toSel.options.length) {
     showToast('Ajoutez d\'autres nœuds pour créer une relation', 'error');
     return;
   }
@@ -987,10 +1010,14 @@ document.getElementById('ea-cancel').addEventListener('click', () => closeModal(
 
 document.getElementById('ea-confirm').addEventListener('click', async () => {
   if (!currentUser) { showToast('Connexion requise', 'error'); return; }
+  // Si fromNodeId est null, le récupérer depuis le sélecteur "De"
+  if (fromNodeId === null) fromNodeId = document.getElementById('ea-from').value;
   const toId = document.getElementById('ea-target').value;
   const type = document.getElementById('ea-type').value;
   const desc = document.getElementById('ea-desc').value.trim();
+  if (!fromNodeId) { showToast('Sélectionnez une source', 'error'); return; }
   if (!toId) { showToast('Sélectionnez une cible', 'error'); return; }
+  if (fromNodeId === toId) { showToast('Source et cible doivent être différentes', 'error'); return; }
   try {
     await addDoc(edgesCol(), {
       fromId: fromNodeId,
@@ -1004,6 +1031,7 @@ document.getElementById('ea-confirm').addEventListener('click', async () => {
     const fromLabel = nodesDS.get(fromNodeId)?.label || '?';
     const toLabel   = nodesDS.get(toId)?.label || '?';
     await logHistory('Relation créée', `${fromLabel} ↔ ${toLabel} (${type})`);
+    fromNodeId = null;
     closeModal('modal-edge-add');
     showToast('Relation créée');
   } catch (ex) {

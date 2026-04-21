@@ -290,28 +290,12 @@ body.is-pj .mj-only{display:none !important;}
 
 <!-- ── FIREBASE + APP ── -->
 <script type="module">
-import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
-  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, doc, onSnapshot, setDoc, getDoc }
+import { auth, db as db_fs, ADMIN_UID as MJ_UID, loginUser, logoutUser, onAuthStateChanged } from './auth-init.js';
+import { doc, onSnapshot, setDoc, getDoc }
   from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-/* ── CONFIG ── */
-const firebaseConfig = {
-  apiKey: "AIzaSyBDxi-HmCweLukbYF2KMq9O72yS9PIMoeA",
-  authDomain: "myz-campagne.firebaseapp.com",
-  projectId: "myz-campagne",
-  storageBucket: "myz-campagne.firebasestorage.app",
-  messagingSenderId: "352488409798",
-  appId: "1:352488409798:web:e6d3daa4bc6e8a09a065c7"
-};
-const MJ_UID   = "NQDL7LT3zmewlfSJa69VWY6qSPU2";
-const DOC_PATH = "zone/main";   // Collection zone, document main
+const DOC_PATH = "zone/main";
 const CK       = "myz-grande-brume-calib-v2"; // Calibration reste locale
-
-const fbApp = initializeApp(firebaseConfig);
-const auth  = getAuth(fbApp);
-const db_fs = getFirestore(fbApp);
 
 /* ── GRID ── */
 const ROWS = 'ABCDEFGHIJKLMNOPQRS'.split('');
@@ -713,7 +697,7 @@ loginForm.addEventListener('submit', async (e)=>{
   loginBtn.textContent='Connexion…';
   const email=document.getElementById('login-email').value.trim();
   const pwd  =document.getElementById('login-password').value;
-  try{ await signInWithEmailAndPassword(auth, email, pwd); }
+  try{ await loginUser(email, pwd); }
   catch(err){
     let msg='Identifiants incorrects.';
     if(err.code==='auth/too-many-requests') msg='Trop de tentatives, réessaie plus tard.';
@@ -725,7 +709,7 @@ loginForm.addEventListener('submit', async (e)=>{
 });
 
 document.getElementById('btn-logout')?.addEventListener('click',async()=>{
-  if(confirm('Se déconnecter ?')){ await signOut(auth); location.reload(); }
+  if(confirm('Se déconnecter ?')){ await logoutUser(); location.reload(); }
 });
 
 onAuthStateChanged(auth, async (user)=>{
