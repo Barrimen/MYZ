@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>MYZ — La Grande Brume</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Palette éclaircie pour meilleure lisibilité */
+  --bg:#100e0b; --panel:#1a1610; --border:#3a3420; --border2:#504a30;
+  --text:#d4bc82; --dim:#8a7e58; --bright:#ede0aa;
+  --red:#8b1414; --red2:#cc2020; --gold:#c8a040; --gold2:#9a7a38;
+  --green:#3aaa4e; --blue:#2890d8; --amber:#d0b038; --purple:#8050b0;
+  --surface2: #221e15; --surface3: #2e2818;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Rajdhani',monospace;color:var(--text);}
+
+/* ── MAP (décalé vers le bas pour laisser place au header) ── */
+#map{position:fixed;inset:54px 0 0 0;background:var(--bg);}
+.leaflet-container{background:#0a0805!important;}
+.leaflet-control-attribution,.leaflet-control-zoom{display:none!important;}
+
+/* ── CELLS ── */
+/* Les styles des cellules sont gérés via Leaflet setStyle() — pas de CSS sur les path SVG */
+.cell-marker{pointer-events:none;}
+.cell-dots{display:flex;flex-wrap:wrap;gap:2px;padding:2px;}
+.cd{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 5px currentColor;}
+.cd-e{color:var(--green);background:var(--green);}
+.cd-d{color:var(--red2);background:var(--red2);}
+.cd-n{color:var(--blue);background:var(--blue);}
+.cd-i{color:var(--amber);background:var(--amber);}
+.cd-o{color:var(--purple);background:var(--purple);}
+.cell-name-label{font-family:'Special Elite',monospace;font-size:7px;color:rgba(240,220,165,.95);text-shadow:0 0 6px #000,0 0 4px #000;white-space:nowrap;pointer-events:none;line-height:1;}
+
+/* ── HEADER ── */
+#hd{position:fixed;top:0;left:0;right:0;height:54px;background:linear-gradient(180deg,#181410,#121009);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:1000;box-shadow:0 2px 24px rgba(0,0,0,.85);}
+.hd-l{display:flex;align-items:baseline;gap:14px;}
+.hd-title{font-family:'Special Elite',monospace;font-size:14px;letter-spacing:3px;color:var(--bright);text-transform:uppercase;}
+.hd-sub{font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.hd-r{display:flex;align-items:center;gap:10px;}
+.legend{display:flex;gap:10px;border-left:1px solid var(--border);padding-left:14px;align-items:center;}
+.leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--dim);}
+.leg-dot{width:7px;height:7px;border-radius:50%;}
+.btn{font-family:'Rajdhani',monospace;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:5px 12px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;transition:all .18s;}
+.btn:hover{border-color:var(--gold2);color:var(--gold);background:rgba(200,160,60,.08);}
+.btn.active-mode{border-color:var(--red2);color:var(--red2);background:rgba(180,20,20,.15);}
+
+/* Sync dot */
+#sdot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);transition:all .3s;}
+#sdot.s{background:var(--gold);box-shadow:0 0 10px var(--gold);}
+#sdot.err{background:var(--red2);box-shadow:0 0 8px var(--red2);}
+
+/* User info dans le header */
+.hd-user{display:flex;align-items:center;gap:8px;border-left:1px solid var(--border);padding-left:12px;font-size:10px;color:var(--dim);}
+.hd-user .pseudo{color:var(--gold);font-weight:600;font-size:11px;}
+.hd-user .role{padding:1px 6px;border:1px solid;letter-spacing:.06em;font-size:9px;text-transform:uppercase;}
+.hd-user .role.mj{border-color:var(--gold2);color:var(--gold);}
+.hd-user .role.pj{border-color:var(--blue);color:var(--blue);}
+.btn-logout{background:transparent;border:1px solid var(--border);color:var(--dim);padding:3px 8px;cursor:pointer;font-family:'Rajdhani',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;transition:all .15s;}
+.btn-logout:hover{border-color:var(--red2);color:var(--red2);}
+.btn-home{background:transparent;border:1px solid var(--border);color:var(--dim);padding:3px 8px;font-family:'Rajdhani',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;text-decoration:none;display:inline-block;transition:all .15s;}
+.btn-home:hover{border-color:var(--gold2);color:var(--gold);}
+
+/* ── BANNER IMAGE MANQUANTE ── */
+#map-banner{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:900;background:rgba(14,10,6,.94);border:1px solid var(--gold2);border-top:3px solid var(--gold);padding:16px 22px;text-align:center;font-family:'Rajdhani',monospace;max-width:500px;width:calc(100% - 32px);display:none;box-shadow:0 8px 32px rgba(0,0,0,.8);}
+#map-banner.show{display:block;}
+#map-banner .mb-title{font-family:'Special Elite',monospace;font-size:15px;color:var(--gold2);letter-spacing:2px;margin-bottom:6px;}
+#map-banner .mb-sub{font-size:11px;color:var(--dim);margin-bottom:14px;letter-spacing:.8px;line-height:1.6;}
+#map-banner .mb-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.mb-btn{font-family:'Rajdhani',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px 15px;border:1px solid var(--gold2);background:rgba(200,160,60,.12);color:var(--gold);cursor:pointer;transition:all .18s;}
+.mb-btn:hover{background:rgba(200,160,60,.25);}
+.mb-btn.sec{border-color:var(--border2);background:transparent;color:var(--dim);}
+.mb-btn.sec:hover{border-color:var(--dim);color:var(--text);}
+
+/* ── CALIBRATION OVERLAY ── */
+#calib-overlay{position:fixed;top:54px;left:0;right:0;bottom:0;z-index:2000;pointer-events:none;display:none;}
+#calib-overlay.active{pointer-events:all;}
+#calib-msg{position:fixed;top:64px;left:50%;transform:translateX(-50%);background:rgba(12,10,7,.95);border:1px solid var(--red2);border-top:3px solid var(--red2);padding:12px 20px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--bright);z-index:2001;white-space:nowrap;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.85);display:none;}
+#calib-msg .step{color:var(--red2);font-family:'Special Elite',monospace;font-size:14px;}
+#calib-msg .hint{font-size:10px;color:var(--dim);margin-top:4px;letter-spacing:1px;}
+#calib-cursor{position:fixed;width:20px;height:20px;pointer-events:none;border:2px solid var(--red2);border-radius:50%;transform:translate(-50%,-50%);display:none;z-index:2002;box-shadow:0 0 8px var(--red2);}
+#calib-cursor::before,#calib-cursor::after{content:'';position:absolute;background:var(--red2);}
+#calib-cursor::before{left:50%;top:-8px;width:1px;height:36px;transform:translateX(-50%);}
+#calib-cursor::after{top:50%;left:-8px;height:1px;width:36px;transform:translateY(-50%);}
+
+/* ── SIDE PANEL ── */
+#panel{position:fixed;top:54px;right:0;bottom:0;width:380px;background:var(--panel);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:800;display:flex;flex-direction:column;box-shadow:-10px 0 36px rgba(0,0,0,.75);overflow:hidden;}
+#panel.open{transform:translateX(0);}
+#panel::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);z-index:0;}
+#panel::before{content:'CONFIDENTIEL';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-42deg);font-family:'Special Elite',monospace;font-size:36px;letter-spacing:8px;color:rgba(120,40,40,.06);pointer-events:none;white-space:nowrap;z-index:0;}
+
+.ph{position:relative;z-index:1;padding:13px 15px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#1e1a12,transparent);flex-shrink:0;}
+.ph-lbl{font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:3px;}
+.ph-coord{font-family:'Special Elite',monospace;font-size:26px;letter-spacing:8px;color:var(--red2);line-height:1;}
+.ph-close{position:absolute;top:10px;right:10px;width:28px;height:28px;border:1px solid var(--border2);background:transparent;color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s;z-index:2;}
+.ph-close:hover{border-color:var(--red);color:var(--red2);}
+
+/* Champs de formulaire plus lisibles */
+.pb{position:relative;z-index:1;flex:1;overflow-y:auto;padding:14px;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+.pb::-webkit-scrollbar{width:4px;}
+.pb::-webkit-scrollbar-thumb{background:var(--border2);}
+.fg{margin-bottom:14px;}
+.fl{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.fd{width:5px;height:5px;border-radius:50%;}
+
+/* Champs plus clairs et contrastés */
+.fi{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--bright);font-family:'Rajdhani',monospace;font-size:13px;padding:8px 11px;outline:none;transition:border-color .18s,background .18s;resize:none;}
+.fi:focus{border-color:var(--gold2);background:var(--surface3);}
+.fi::placeholder{color:var(--dim);opacity:.6;font-style:italic;}
+.fi-s{min-height:52px;}.fi-m{min-height:70px;}.fi-l{min-height:90px;}
+
+.exp{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--border2);cursor:pointer;transition:all .18s;background:rgba(0,0,0,.25);margin-bottom:14px;}
+.exp:hover{border-color:var(--gold2);}
+.exp.on{border-color:var(--green);background:rgba(40,110,58,.22);}
+.exp-b{width:11px;height:11px;border:1px solid var(--dim);border-radius:50%;transition:all .18s;flex-shrink:0;}
+.exp.on .exp-b{background:var(--green);border-color:var(--green);box-shadow:0 0 8px var(--green);}
+.exp-t{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);transition:color .18s;}
+.exp.on .exp-t{color:var(--green);}
+hr.div{border:none;border-top:1px solid var(--border2);margin:4px 0 14px;}
+
+/* Pied du panel */
+.pf{position:relative;z-index:1;padding:10px 14px;display:flex;gap:8px;border-top:1px solid var(--border);background:linear-gradient(0deg,#0e0c08,transparent);flex-shrink:0;}
+.bsave{flex:1;padding:10px;background:rgba(100,24,24,.5);border:1px solid var(--red);color:var(--bright);font-family:'Rajdhani',monospace;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .18s;}
+.bsave:hover{background:rgba(170,32,32,.55);border-color:var(--red2);box-shadow:0 0 14px rgba(210,40,40,.3);}
+.berase{padding:10px 13px;background:transparent;border:1px solid var(--border2);color:var(--dim);font-family:'Rajdhani',monospace;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .18s;}
+.berase:hover{border-color:var(--red);color:var(--red2);}
+
+/* ── TOOLTIP ── */
+#tt{position:fixed;z-index:1500;pointer-events:none;opacity:0;transition:opacity .15s;background:var(--panel);border:1px solid var(--border2);padding:10px 13px;max-width:240px;font-family:'Rajdhani',monospace;box-shadow:0 8px 28px rgba(0,0,0,.85);}
+#tt.v{opacity:1;}
+.tc{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:3px;color:var(--red2);margin-bottom:4px;}
+.tn{font-size:14px;font-weight:700;color:var(--bright);margin-bottom:3px;}
+.td{font-size:12px;color:var(--text);line-height:1.45;opacity:.85;}
+.tgs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.tg{font-size:9px;letter-spacing:1px;padding:2px 6px;border:1px solid;text-transform:uppercase;}
+.tg-e{border-color:var(--green);color:var(--green);}
+.tg-d{border-color:var(--red2);color:var(--red2);}
+.tg-n{border-color:var(--blue);color:var(--blue);}
+.tg-i{border-color:var(--amber);color:var(--amber);}
+.tg-o{border-color:var(--purple);color:var(--purple);}
+
+/* ── NOTIF ── */
+#notif{position:fixed;bottom:18px;right:18px;z-index:3000;background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--gold);padding:9px 16px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text);transform:translateY(50px);opacity:0;transition:all .25s;}
+#notif.v{transform:translateY(0);opacity:1;}
+
+/* ── LOGIN SCREEN ── */
+.login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
+.login-box{background:var(--panel);border:1px solid var(--border);border-top:3px solid var(--gold2);padding:32px 28px;max-width:380px;width:100%;position:relative;}
+.login-box::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(200,160,60,.04) 0%,transparent 55%);pointer-events:none;}
+.login-title{font-family:'Special Elite',monospace;font-size:22px;letter-spacing:3px;color:var(--bright);margin-bottom:4px;text-transform:uppercase;}
+.login-sub{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.18em;margin-bottom:26px;}
+.login-box .lf{margin-bottom:14px;}
+.login-box .lf label{display:block;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:5px;}
+.login-box input{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--bright);padding:9px 11px;font-family:'Rajdhani',monospace;font-size:13px;outline:none;transition:border-color .18s;}
+.login-box input:focus{border-color:var(--gold2);}
+.login-btn{width:100%;background:rgba(100,60,10,.3);border:1px solid var(--gold2);color:var(--gold);padding:11px;cursor:pointer;font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.15em;text-transform:uppercase;margin-top:10px;transition:all .18s;}
+.login-btn:hover{background:rgba(200,160,60,.18);}
+.login-btn:disabled{opacity:.5;cursor:wait;}
+.login-err{font-size:11px;color:var(--red2);margin-top:10px;min-height:14px;text-align:center;letter-spacing:1px;}
+.login-hint{font-size:10px;color:var(--dim);text-align:center;margin-top:16px;line-height:1.5;letter-spacing:.05em;}
+
+/* MJ-only controls hidden for PJ */
+body.is-pj .mj-only{display:none !important;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-title">☢ La Grande Brume</div>
+    <div class="login-sub">Zone de reconnaissance · Mutant Year Zero</div>
+    <form id="login-form">
+      <div class="lf">
+        <label>E-mail</label>
+        <input type="email" id="login-email" autocomplete="email" required>
+      </div>
+      <div class="lf">
+        <label>Mot de passe</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="login-btn" id="login-btn">Accéder à la Zone</button>
+      <div class="login-err" id="login-err"></div>
+    </form>
+    <div class="login-hint">Accès réservé aux éclaireurs du Peuple.<br>Contactez le MJ pour vos accès.</div>
+  </div>
+</div>
+
+<!-- ── HEADER ── -->
+<div id="hd" style="display:none;">
+  <div class="hd-l">
+    <span class="hd-title">☢ La Grande Brume</span>
+    <span class="hd-sub">Zone de Reconnaissance · Mutant Year Zero</span>
+  </div>
+  <div class="hd-r">
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:var(--green)"></div>Exploré</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--red2)"></div>Danger</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--blue)"></div>PNJs</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--amber)"></div>Objets</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--purple)"></div>Notes</div>
+    </div>
+    <button class="btn mj-only" id="btn-calib">⊹ Calibrer</button>
+    <button class="btn mj-only" id="btn-carte">🖼 Fond de carte</button>
+    <input type="file" id="file-carte" accept="image/*" style="display:none">
+    <button class="btn" id="btn-exp">⬇ Export</button>
+    <button class="btn mj-only" id="btn-imp">⬆ Import</button>
+    <input type="file" id="file-in" accept=".json" style="display:none">
+    <div id="sdot" title="Synchronisation Firebase"></div>
+    <div class="hd-user">
+      <a href="index.html" class="btn-home">⌂ Accueil</a>
+      <span class="pseudo" id="hd-pseudo">—</span>
+      <span class="role pj" id="hd-role">PJ</span>
+      <button class="btn-logout" id="btn-logout">Quitter</button>
+    </div>
+  </div>
+</div>
+
+<!-- BANNER IMAGE MANQUANTE -->
+<div id="map-banner">
+  <div class="mb-title">Fond de carte non chargé</div>
+  <div class="mb-sub">
+    Chargez votre image de carte MYZ pour l'afficher en fond.<br>
+    Elle sera mémorisée dans votre navigateur pour les prochaines sessions.<br>
+    <span style="color:var(--text3);font-size:10px;">(Les données de zone restent synchronisées même sans l'image)</span>
+  </div>
+  <div class="mb-btns">
+    <button class="mb-btn" id="banner-btn-carte">🖼 Charger l'image</button>
+    <button class="mb-btn sec" id="banner-btn-dismiss">Continuer sans image</button>
+  </div>
+</div>
+
+<div id="map"></div>
+
+<!-- CALIBRATION UI -->
+<div id="calib-overlay"></div>
+<div id="calib-msg">
+  <div class="step" id="calib-step">ÉTAPE 1 / 2</div>
+  <div id="calib-text">Cliquez sur le coin supérieur-gauche de la cellule A1</div>
+  <div class="hint" id="calib-hint">Appuyez sur Échap pour annuler</div>
+</div>
+<div id="calib-cursor"></div>
+
+<!-- SIDE PANEL -->
+<div id="panel">
+  <div class="ph">
+    <div class="ph-lbl">Coordonnées · Secteur</div>
+    <div class="ph-coord" id="ph-coord">— —</div>
+    <button class="ph-close" id="ph-close">✕</button>
+  </div>
+  <div class="pb">
+    <div class="fg">
+      <div class="fl"><div class="fd" style="background:var(--amber)"></div>Nom du lieu</div>
+      <input type="text" class="fi" id="f-name" placeholder="Ex: Ruines du Vieux Marché…" maxlength="60">
+    </div>
+    <div class="exp" id="exp-toggle"><div class="exp-b"></div><span class="exp-t">Zone non explorée</span></div>
+    <hr class="div">
+    <div class="fg">
+      <div class="fl"><div class="fd" style="background:#7a8a6a"></div>Description</div>
+      <textarea class="fi fi-l" id="f-desc" placeholder="Ambiance, points d'intérêt, particularités…"></textarea>
+    </div>
+    <div class="fg">
+      <div class="fl"><div class="fd" style="background:var(--red2)"></div>Dangers</div>
+      <textarea class="fi fi-s" id="f-danger" placeholder="Créatures, radiation, pièges…"></textarea>
+    </div>
+    <div class="fg">
+      <div class="fl"><div class="fd" style="background:var(--blue)"></div>PNJs présents</div>
+      <textarea class="fi fi-s" id="f-npc" placeholder="Noms, rôles, factions…"></textarea>
+    </div>
+    <div class="fg">
+      <div class="fl"><div class="fd" style="background:var(--amber)"></div>Objets trouvés</div>
+      <textarea class="fi fi-s" id="f-item" placeholder="Artefacts, ressources, équipements…"></textarea>
+    </div>
+    <div class="fg">
+      <div class="fl"><div class="fd" style="background:var(--purple)"></div>Notes libres</div>
+      <textarea class="fi fi-m" id="f-note" placeholder="Observations, quêtes, théories…"></textarea>
+    </div>
+  </div>
+  <div class="pf">
+    <button class="bsave" id="btn-save">▣ Enregistrer</button>
+    <button class="berase mj-only" id="btn-erase">Effacer</button>
+  </div>
+</div>
+
+<div id="tt"></div>
+<div id="notif"></div>
+
+<!-- ── FIREBASE + APP ── -->
+<script type="module">
+import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getFirestore, doc, onSnapshot, setDoc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+/* ── CONFIG ── */
+const firebaseConfig = {
+  apiKey: "AIzaSyBDxi-HmCweLukbYF2KMq9O72yS9PIMoeA",
+  authDomain: "myz-campagne.firebaseapp.com",
+  projectId: "myz-campagne",
+  storageBucket: "myz-campagne.firebasestorage.app",
+  messagingSenderId: "352488409798",
+  appId: "1:352488409798:web:e6d3daa4bc6e8a09a065c7"
+};
+const MJ_UID   = "NQDL7LT3zmewlfSJa69VWY6qSPU2";
+const DOC_PATH = "zone/main";   // Collection zone, document main
+const CK       = "myz-grande-brume-calib-v2"; // Calibration reste locale
+
+const fbApp = initializeApp(firebaseConfig);
+const auth  = getAuth(fbApp);
+const db_fs = getFirestore(fbApp);
+
+/* ── GRID ── */
+const ROWS = 'ABCDEFGHIJKLMNOPQRS'.split('');
+const NCOLS = 30, NROWS = 19;
+const IMG_W = 2331, IMG_H = 1524;
+const DEF_GRID = { x1:100, y1:102, x2:2331, y2:1524 };
+
+let grid   = Object.assign({}, DEF_GRID);
+let db     = {};   // { cellKey: { name, desc, danger, npc, item, note, explored } }
+let active = null;
+let lmap, layers = {}, markers = {};
+let isMJ   = false;
+let playerName = null;
+let isRemoteUpdate = false;
+let saveTimer = null;
+
+/* ── CALIBRATION (localStorage, local à l'écran) ── */
+function loadGrid() {
+  try { const c=localStorage.getItem(CK); if(c) grid=JSON.parse(c); } catch(e){}
+}
+function saveGrid() {
+  try { localStorage.setItem(CK, JSON.stringify(grid)); } catch(e){}
+}
+
+/* ── SYNC DOT ── */
+function setSyncDot(state){ // 'ok' | 'saving' | 'err'
+  const d=document.getElementById('sdot');
+  d.className = state === 'err' ? 'err' : state === 'saving' ? 's' : '';
+}
+
+/* ── FIRESTORE ── */
+async function saveToFirestore(immediate=false){
+  if(isRemoteUpdate) return;
+  const doSave = async ()=>{
+    try{
+      setSyncDot('saving');
+      await setDoc(doc(db_fs, DOC_PATH), { cells: db });
+      setSyncDot('ok');
+    }catch(e){
+      console.error(e);
+      setSyncDot('err');
+      notify('Erreur de synchronisation');
+    }
+  };
+  if(immediate){ clearTimeout(saveTimer); await doSave(); }
+  else { clearTimeout(saveTimer); saveTimer = setTimeout(doSave, 800); }
+}
+
+function subscribeToZone(){
+  onSnapshot(doc(db_fs, DOC_PATH),
+    (snap)=>{
+      setSyncDot('ok');
+      if(snap.exists()){
+        isRemoteUpdate = true;
+        const data = snap.data();
+        db = data.cells || {};
+        // Re-render toutes les cases
+        Object.assign({}, layers);
+        // On reconstruit juste les marqueurs sans tout rebuilder
+        Object.keys(db).forEach(k=>{ if(layers[k]) renderCell(k); });
+        // Effacer les cases qui n'ont plus de données
+        Object.keys(layers).forEach(k=>{ if(!db[k] && layers[k]) renderCell(k); });
+        if(active) openPanel(active, false); // Rafraîchir le panel ouvert si besoin
+        isRemoteUpdate = false;
+      } else {
+        // Premier lancement, le MJ initialise
+        if(isMJ){ setDoc(doc(db_fs, DOC_PATH), { cells: {} }).catch(console.error); }
+      }
+    },
+    (err)=>{ console.error(err); setSyncDot('err'); }
+  );
+}
+
+/* ── IMAGE DE CARTE ── */
+const IMG_SK   = 'myz-zone-img-v1';
+const IMG_PATH = './carte.jpg';   // image dans le même dossier que zone.html sur Netlify
+let imgOverlay = null;
+
+function applyMapImage(src){
+  if(!lmap) return;
+  if(imgOverlay){ imgOverlay.remove(); imgOverlay=null; }
+  imgOverlay = L.imageOverlay(src, [[0,0],[-IMG_H,IMG_W]]).addTo(lmap);
+  document.getElementById('map-banner').classList.remove('show');
+}
+
+function tryLoadNetlifyImage(){
+  // 1. Essayer carte.jpg depuis Netlify
+  const img = new Image();
+  img.onload  = ()=> applyMapImage(IMG_PATH);
+  img.onerror = ()=> {
+    // 2. Fallback : localStorage (chargement manuel précédent)
+    const stored = localStorage.getItem(IMG_SK);
+    if(stored) applyMapImage(stored);
+    else setTimeout(()=> document.getElementById('map-banner').classList.add('show'), 600);
+  };
+  img.src = IMG_PATH + '?v=' + Date.now(); // éviter le cache navigateur au 1er test
+}
+
+function openImagePicker(){ document.getElementById('file-carte').click(); }
+
+function handleImageFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const dataUrl = e.target.result;
+    try { localStorage.setItem(IMG_SK, dataUrl); } catch(ex){ /* image trop grande */ }
+    applyMapImage(dataUrl);
+    notify('Fond de carte chargé ✓');
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── MAP INIT ── */
+function initMap() {
+  lmap = L.map('map', {
+    crs: L.CRS.Simple,
+    minZoom: -3, maxZoom: 4,
+    zoomSnap: 0.1, zoomDelta: 0.5,
+    attributionControl: false, zoomControl: false,
+  });
+  lmap.fitBounds([[0,0],[-IMG_H,IMG_W]], {padding:[10,10]});
+  buildGrid();
+  tryLoadNetlifyImage();
+}
+
+/* ── STYLES LEAFLET DES CELLULES ── */
+const STYLE_DEFAULT  = { color:'#b89840', weight:0.5, opacity:0.08, fill:true, fillColor:'#000000', fillOpacity:0 };
+const STYLE_DATA     = { color:'#b89840', weight:0.5, opacity:0.25, fill:true, fillColor:'#000000', fillOpacity:0 };
+const STYLE_EXPLORED = { color:'#3aaa4e', weight:0.5, opacity:0.35, fill:true, fillColor:'#3aaa4e', fillOpacity:0.18 };
+const STYLE_ACTIVE   = { color:'#cc2020', weight:1.5, opacity:0.95, fill:true, fillColor:'#cc2020', fillOpacity:0.13 };
+const STYLE_HOVER    = { color:'#d4bc82', weight:1,   opacity:0.70, fill:true, fillColor:'#d4bc82', fillOpacity:0.10 };
+const STYLE_HOV_EXP  = { color:'#3aaa4e', weight:1,   opacity:0.60, fill:true, fillColor:'#3aaa4e', fillOpacity:0.28 };
+
+function getCellStyle(key, hovered=false){
+  const d = db[key]||{};
+  if(key===active)              return STYLE_ACTIVE;
+  if(hovered && d.explored)    return STYLE_HOV_EXP;
+  if(hovered)                  return STYLE_HOVER;
+  if(d.explored)               return STYLE_EXPLORED;
+  if(Object.values(d).some(v=>v&&v!==false)) return STYLE_DATA;
+  return STYLE_DEFAULT;
+}
+
+function buildGrid() {
+  Object.values(layers).forEach(l => l.remove());
+  Object.values(markers).forEach(m => m.remove());
+  layers = {}; markers = {};
+
+  ROWS.forEach((row, ri) => {
+    for(let ci=0; ci<NCOLS; ci++) {
+      const col = ci+1;
+      const key = row+col;
+      const bounds = cellBounds(ri, ci);
+
+      const rect = L.rectangle(bounds, {
+        ...getCellStyle(key),
+        interactive: true,
+        bubblingMouseEvents: false,
+        className: 'cell-rect',
+      });
+
+      rect.on('click',     ()=> openPanel(key));
+      rect.on('mouseover', e => { rect.setStyle(getCellStyle(key, true)); showTT(e, key); });
+      rect.on('mouseout',  ()=> { rect.setStyle(getCellStyle(key, false)); hideTT(); });
+      rect.on('mousemove', e => { if(document.getElementById('tt').classList.contains('v')) posTT(e.originalEvent.clientX, e.originalEvent.clientY); });
+      rect.addTo(lmap);
+      layers[key] = rect;
+      renderCellMarker(key);
+    }
+  });
+}
+
+function cw() { return (grid.x2 - grid.x1) / NCOLS; }
+function ch() { return (grid.y2 - grid.y1) / NROWS; }
+
+function cellBounds(ri, ci) {
+  const x1 = grid.x1 + ci * cw();
+  const x2 = grid.x1 + (ci+1) * cw();
+  const y1 = grid.y1 + ri * ch();
+  const y2 = grid.y1 + (ri+1) * ch();
+  return [[-y1, x1], [-y2, x2]];
+}
+
+/* renderCell : met à jour style + marqueur d'une cellule */
+function renderCell(key) {
+  if(layers[key]) layers[key].setStyle(getCellStyle(key, false));
+  renderCellMarker(key);
+}
+
+function renderCellMarker(key) {
+  const d = db[key] || {};
+  if(markers[key]){ markers[key].remove(); delete markers[key]; }
+
+  const row=key[0], ci=parseInt(key.slice(1))-1, ri=ROWS.indexOf(row);
+  const b     = cellBounds(ri, ci);
+  const cellW = cw(), cellH = ch();
+
+  let dotsHtml='';
+  if(d.explored) dotsHtml+='<div class="cd cd-e"></div>';
+  if(d.danger)   dotsHtml+='<div class="cd cd-d"></div>';
+  if(d.npc)      dotsHtml+='<div class="cd cd-n"></div>';
+  if(d.item)     dotsHtml+='<div class="cd cd-i"></div>';
+  if(d.note)     dotsHtml+='<div class="cd cd-o"></div>';
+
+  const nameHtml = d.name
+    ? `<div class="cell-name-label" style="max-width:${cellW-4}px">${esc(d.name)}</div>`
+    : '';
+
+  if(!dotsHtml && !nameHtml) return;
+
+  const icon = L.divIcon({
+    className: 'cell-marker cm-'+key,
+    html: `<div style="position:absolute;top:2px;left:2px">${nameHtml}<div class="cell-dots">${dotsHtml}</div></div>`,
+    iconSize: [cellW, cellH],
+    iconAnchor: [0, 0],
+  });
+  const m = L.marker(b[0], {icon, interactive:false, zIndexOffset:-100});
+  m.addTo(lmap);
+  markers[key] = m;
+}
+
+/* ── TOOLTIP ── */
+let ttId;
+function showTT(e, key){
+  clearTimeout(ttId);
+  ttId=setTimeout(()=>{
+    const d=db[key], row=key[0], col=key.slice(1);
+    let h=`<div class="tc">${esc(row)} — ${esc(col)}</div>`;
+    if(d){
+      if(d.name) h+=`<div class="tn">${esc(d.name)}</div>`;
+      if(d.desc){ const p=d.desc.length>90?d.desc.slice(0,87)+'…':d.desc; h+=`<div class="td">${esc(p)}</div>`; }
+      const tgs=[];
+      if(d.explored) tgs.push('<span class="tg tg-e">Exploré</span>');
+      if(d.danger)   tgs.push('<span class="tg tg-d">⚠ Danger</span>');
+      if(d.npc)      tgs.push('<span class="tg tg-n">◉ PNJs</span>');
+      if(d.item)     tgs.push('<span class="tg tg-i">◆ Objets</span>');
+      if(d.note)     tgs.push('<span class="tg tg-o">✎ Notes</span>');
+      if(tgs.length) h+=`<div class="tgs">${tgs.join('')}</div>`;
+    } else {
+      h+=`<div class="td" style="opacity:.4;font-style:italic">Zone inexplorée — cliquer pour éditer</div>`;
+    }
+    const tt=document.getElementById('tt');
+    tt.innerHTML=h; tt.classList.add('v');
+    posTT(e.originalEvent.clientX, e.originalEvent.clientY);
+  }, 300);
+}
+function hideTT(){ clearTimeout(ttId); document.getElementById('tt').classList.remove('v'); }
+function posTT(mx,my){
+  const tt=document.getElementById('tt');
+  let x=mx+14, y=my+14;
+  if(x+tt.offsetWidth>window.innerWidth-8)  x=mx-tt.offsetWidth-14;
+  if(y+tt.offsetHeight>window.innerHeight-8) y=my-tt.offsetHeight-14;
+  tt.style.left=x+'px'; tt.style.top=y+'px';
+}
+document.addEventListener('mousemove',e=>{ if(document.getElementById('tt').classList.contains('v')) posTT(e.clientX,e.clientY); });
+
+/* ── PANEL ── */
+function openPanel(key, updateFields=true){
+  // Désactiver l'ancienne cellule active
+  if(active && active!==key && layers[active]) layers[active].setStyle(getCellStyle(active, false));
+  active = key;
+  const d = db[key] || {};
+  document.getElementById('ph-coord').textContent = key[0]+' — '+key.slice(1);
+  if(updateFields){
+    ['name','desc','danger','npc','item','note'].forEach(f=>{
+      document.getElementById('f-'+f).value = d[f] || '';
+    });
+    setExp(d.explored || false);
+  }
+  // Marquer la cellule comme active
+  if(layers[key]) layers[key].setStyle(STYLE_ACTIVE);
+  document.getElementById('panel').classList.add('open');
+}
+
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  // Restaurer le style normal de la cellule active
+  if(active && layers[active]) layers[active].setStyle(getCellStyle(active, false));
+  active = null;
+}
+
+function setExp(on){
+  const t=document.getElementById('exp-toggle');
+  t.dataset.on = on?'1':'0';
+  if(on){ t.classList.add('on'); t.querySelector('.exp-t').textContent='Zone explorée'; }
+  else  { t.classList.remove('on'); t.querySelector('.exp-t').textContent='Zone non explorée'; }
+}
+
+function savePanel(){
+  if(!active) return;
+  const explored = document.getElementById('exp-toggle').dataset.on==='1';
+  const d={};
+  ['name','desc','danger','npc','item','note'].forEach(f=> d[f]=document.getElementById('f-'+f).value.trim());
+  d.explored = explored;
+  const any = Object.entries(d).some(([k,v])=>v!==''&&v!==false);
+  if(any) db[active]=d; else delete db[active];
+  renderCell(active);
+  saveToFirestore(true);
+  notify('Zone enregistrée ✓');
+}
+
+function erasePanel(){
+  if(!isMJ){ notify('MJ uniquement'); return; }
+  if(!active || !confirm('Effacer toutes les données de ce secteur ?')) return;
+  delete db[active];
+  renderCell(active);
+  ['name','desc','danger','npc','item','note'].forEach(id=>document.getElementById('f-'+id).value='');
+  setExp(false);
+  saveToFirestore(true);
+  notify('Zone effacée');
+}
+
+/* ── CALIBRATION ── */
+let calibStep=0, calibPt1=null;
+function startCalib(){
+  if(!isMJ){ notify('MJ uniquement'); return; }
+  calibStep=1; calibPt1=null;
+  document.getElementById('calib-overlay').classList.add('active');
+  document.getElementById('calib-msg').style.display='block';
+  document.getElementById('calib-cursor').style.display='block';
+  document.getElementById('btn-calib').classList.add('active-mode');
+  document.getElementById('calib-step').textContent='ÉTAPE 1 / 2';
+  document.getElementById('calib-text').textContent='Cliquez sur le coin supérieur-gauche de la cellule A1';
+  document.getElementById('calib-hint').textContent='Là où se croisent la bordure gauche et la bordure haute de A1 — Échap pour annuler';
+  lmap.on('click', onCalibClick);
+  document.getElementById('calib-overlay').addEventListener('mousemove', updateCursor);
+}
+function updateCursor(e){
+  const cur=document.getElementById('calib-cursor');
+  cur.style.left=e.clientX+'px'; cur.style.top=e.clientY+'px';
+}
+function onCalibClick(e){
+  const latlng=e.latlng;
+  const px={x: latlng.lng, y: -latlng.lat};
+  if(calibStep===1){
+    calibPt1=px; calibStep=2;
+    document.getElementById('calib-step').textContent='ÉTAPE 2 / 2';
+    document.getElementById('calib-text').textContent='Cliquez sur le coin inférieur-droit de la cellule S30';
+    document.getElementById('calib-hint').textContent='Là où se croisent la bordure droite et la bordure basse de S30';
+  } else if(calibStep===2){
+    grid={x1:calibPt1.x, y1:calibPt1.y, x2:px.x, y2:px.y};
+    saveGrid(); endCalib(); buildGrid(); notify('Grille recalibrée ✓');
+  }
+}
+function endCalib(){
+  calibStep=0;
+  lmap.off('click', onCalibClick);
+  document.getElementById('calib-overlay').classList.remove('active');
+  document.getElementById('calib-msg').style.display='none';
+  document.getElementById('calib-cursor').style.display='none';
+  document.getElementById('btn-calib')?.classList.remove('active-mode');
+}
+
+/* ── EXPORT / IMPORT ── */
+function exportDB(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));
+  a.download='myz-grande-brume-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); notify('Export OK');
+}
+function importDB(file){
+  if(!isMJ){ notify('MJ uniquement'); return; }
+  const r=new FileReader();
+  r.onload=async e=>{
+    try{
+      const imp=JSON.parse(e.target.result);
+      db={...db,...imp};
+      Object.keys(imp).forEach(k=>renderCell(k));
+      await saveToFirestore(true);
+      notify('Import synchronisé ✓');
+    }catch{ notify('JSON invalide ✗'); }
+  };
+  r.readAsText(file);
+}
+
+/* ── UTIL ── */
+let nt;
+function notify(msg){ const n=document.getElementById('notif'); n.textContent=msg; n.classList.add('v'); clearTimeout(nt); nt=setTimeout(()=>n.classList.remove('v'),2500); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── PROFIL PSEUDO ── */
+async function loadPlayerName(uid){
+  try{
+    const snap=await getDoc(doc(db_fs,'profiles',uid));
+    if(snap.exists()) return snap.data().name||null;
+  }catch(e){}
+  return null;
+}
+
+/* ── AUTH ── */
+const loginForm = document.getElementById('login-form');
+const loginBtn  = document.getElementById('login-btn');
+const loginErr  = document.getElementById('login-err');
+
+loginForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  loginErr.textContent='';
+  loginBtn.disabled=true;
+  loginBtn.textContent='Connexion…';
+  const email=document.getElementById('login-email').value.trim();
+  const pwd  =document.getElementById('login-password').value;
+  try{ await signInWithEmailAndPassword(auth, email, pwd); }
+  catch(err){
+    let msg='Identifiants incorrects.';
+    if(err.code==='auth/too-many-requests') msg='Trop de tentatives, réessaie plus tard.';
+    loginErr.textContent=msg;
+  }finally{
+    loginBtn.disabled=false;
+    loginBtn.textContent='Accéder à la Zone';
+  }
+});
+
+document.getElementById('btn-logout')?.addEventListener('click',async()=>{
+  if(confirm('Se déconnecter ?')){ await signOut(auth); location.reload(); }
+});
+
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
+    isMJ = (user.uid===MJ_UID);
+    document.body.classList.toggle('is-pj', !isMJ);
+
+    // Récupérer le pseudo depuis les profils partagés
+    playerName = await loadPlayerName(user.uid);
+    document.getElementById('hd-pseudo').textContent = playerName || user.email.split('@')[0];
+    const roleEl = document.getElementById('hd-role');
+    roleEl.textContent = isMJ?'MJ':'PJ';
+    roleEl.className   = 'role '+(isMJ?'mj':'pj');
+
+    // Cacher l'écran de connexion et montrer la carte
+    document.getElementById('login-overlay').style.display='none';
+    document.getElementById('hd').style.display='';
+
+    // Charger la calibration locale puis initialiser la carte
+    loadGrid();
+    initMap();
+
+    // Démarrer la sync Firebase
+    subscribeToZone();
+
+    // Import auto du JSON existant si tu as des données locales à migrer
+    // (s'exécute une seule fois si le document Firestore est vide)
+    // Commenté par défaut — décommenter pour une migration manuelle
+
+  } else {
+    document.getElementById('login-overlay').style.display='';
+    document.getElementById('hd').style.display='none';
+  }
+});
+
+/* ── EVENTS ── */
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('ph-close')  .addEventListener('click', closePanel);
+  document.getElementById('btn-save')  .addEventListener('click', savePanel);
+  document.getElementById('btn-erase') .addEventListener('click', erasePanel);
+  document.getElementById('exp-toggle').addEventListener('click', e=>setExp(e.currentTarget.dataset.on!=='1'));
+  document.getElementById('btn-calib') .addEventListener('click', startCalib);
+  document.getElementById('btn-exp')   .addEventListener('click', exportDB);
+  document.getElementById('btn-imp')   .addEventListener('click', ()=>document.getElementById('file-in').click());
+  document.getElementById('file-in')   .addEventListener('change', e=>{ if(e.target.files[0]) importDB(e.target.files[0]); e.target.value=''; });
+  // Bouton image de fond
+  document.getElementById('btn-carte') .addEventListener('click', openImagePicker);
+  document.getElementById('file-carte').addEventListener('change', e=>{ if(e.target.files[0]) handleImageFile(e.target.files[0]); e.target.value=''; });
+  // Banner boutons
+  document.getElementById('banner-btn-carte')  .addEventListener('click', ()=>{ document.getElementById('map-banner').classList.remove('show'); openImagePicker(); });
+  document.getElementById('banner-btn-dismiss').addEventListener('click', ()=> document.getElementById('map-banner').classList.remove('show'));
+
+  document.addEventListener('keydown',  e=>{
+    if(e.key==='Escape'){ if(calibStep>0) endCalib(); else closePanel(); }
+  });
+});
+</script>
+</body>
+</html>

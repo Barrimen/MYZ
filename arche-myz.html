@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L'Arche — Mutant Year Zero</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0c0a;
+  --surface: #191512;
+  --surface2: #221d18;
+  --surface3: #2c2520;
+  --border: #3a2f24;
+  --border2: #56442f;
+  --gold: #c7901e;
+  --gold2: #e5b040;
+  --amber: #cc6a08;
+  --red: #8c2417;
+  --red2: #bf3522;
+  --green: #2a6035;
+  --green2: #489754;
+  --blue: #295c8a;
+  --blue2: #3d82be;
+  --text: #d1c2a6;
+  --text2: #887568;
+  --text3: #574a3a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:15px;min-height:100vh;}
+h1,h2,h3,.display{font-family:'Special Elite',cursive;letter-spacing:.04em;}
+
+/* LAYOUT */
+.page{max-width:1100px;margin:0 auto;padding:22px 18px 60px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+@media(max-width:740px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+/* LOGIN SCREEN */
+.login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
+.login-box{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--gold);padding:32px 28px;max-width:380px;width:100%;position:relative;}
+.login-box::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(199,144,30,.05) 0%,transparent 55%);pointer-events:none;}
+.login-title{font-family:'Special Elite',cursive;font-size:24px;color:var(--gold2);margin-bottom:6px;}
+.login-sub{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.18em;margin-bottom:24px;}
+.login-box .ef{margin-bottom:14px;}
+.login-box .ef label{display:block;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px;}
+.login-box input{width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:9px 11px;font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;}
+.login-box input:focus{border-color:var(--gold);}
+.login-btn{width:100%;background:rgba(199,144,30,.15);border:1px solid var(--gold);color:var(--gold);padding:11px;cursor:pointer;font-family:'Special Elite',cursive;font-size:13px;letter-spacing:.1em;margin-top:10px;transition:all .15s;}
+.login-btn:hover{background:rgba(199,144,30,.3);}
+.login-btn:disabled{opacity:.5;cursor:wait;}
+.login-err{font-size:11px;color:var(--red2);margin-top:10px;min-height:14px;text-align:center;}
+.login-hint{font-size:10px;color:var(--text3);text-align:center;margin-top:16px;line-height:1.5;}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--gold);margin-bottom:14px;position:relative;}
+.header::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(199,144,30,.05) 0%,transparent 55%);pointer-events:none;}
+.header-left{flex:1;min-width:0;}
+.camp-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.18em;}
+#camp-name{font-family:'Special Elite',cursive;font-size:26px;color:var(--gold2);background:transparent;border:none;border-bottom:1px dashed var(--border2);width:100%;outline:none;padding:2px 0;}
+#camp-name:focus{border-bottom-color:var(--gold);}
+#camp-name:disabled{opacity:.8;cursor:default;}
+.header-stats{display:flex;gap:20px;align-items:flex-start;flex-shrink:0;}
+.hstat{text-align:center;}
+.hstat .hl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;}
+.hstat .hv{font-size:22px;font-weight:700;color:var(--gold2);line-height:1.1;}
+.hstat .hs{font-size:10px;color:var(--text2);}
+.divv{width:1px;background:var(--border);align-self:stretch;}
+
+/* USER BAR */
+.user-bar{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:10px;font-size:11px;color:var(--text3);}
+.user-bar .role{padding:2px 8px;border:1px solid var(--border2);letter-spacing:.08em;text-transform:uppercase;font-family:'Rajdhani',sans-serif;}
+.user-bar .role.mj{border-color:var(--gold);color:var(--gold);}
+.user-bar .role.pj{border-color:var(--blue2);color:var(--blue2);}
+.user-bar .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green2);display:inline-block;box-shadow:0 0 6px var(--green2);}
+.user-bar .sync-dot.off{background:var(--red2);box-shadow:0 0 6px var(--red2);}
+.user-bar .logout-btn{background:transparent;border:1px solid var(--border2);color:var(--text3);padding:3px 9px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.08em;transition:all .15s;}
+.user-bar .logout-btn:hover{border-color:var(--red2);color:var(--red2);}
+
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);padding:16px 18px;margin-bottom:14px;}
+.pt{font-family:'Special Elite',cursive;font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:.18em;margin-bottom:14px;padding-bottom:7px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+
+/* BUTTONS */
+.btn-sm{background:var(--surface3);border:1px solid var(--border2);color:var(--text2);width:22px;height:22px;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Rajdhani',sans-serif;flex-shrink:0;}
+.btn-sm:hover{background:var(--border2);color:var(--text);}
+.btn-md{background:var(--surface3);border:1px solid var(--border2);color:var(--text2);padding:4px 10px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;font-family:'Rajdhani',sans-serif;}
+.btn-md:hover{background:var(--border2);color:var(--text);}
+.btn-icon{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px 4px;transition:color .15s;}
+.btn-icon:hover{color:var(--text);}
+.btn-icon.del:hover{color:var(--red2);}
+.btn-icon.ok:hover{color:var(--green2);}
+.btn-full{width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);padding:9px 14px;cursor:pointer;font-family:'Special Elite',cursive;font-size:12px;letter-spacing:.1em;text-align:center;transition:all .15s;margin-top:10px;}
+.btn-full:hover{border-color:var(--gold);color:var(--gold);}
+
+/* Masquer les boutons MJ-only quand on n'est pas MJ */
+body.is-pj .mj-only{display:none !important;}
+
+/* DÉV BARS */
+.dev-row{margin-bottom:13px;}
+.dev-row:last-child{margin-bottom:0;}
+.dev-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.dev-name{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;}
+.dev-ctrls{display:flex;align-items:center;gap:5px;}
+.dev-val{font-family:'Special Elite',cursive;font-size:20px;color:var(--text);min-width:32px;text-align:center;line-height:1;}
+.dev-bar-bg{height:7px;background:var(--surface3);border:1px solid var(--border);overflow:hidden;}
+.dev-bar-fill{height:100%;transition:width .3s,background .3s;}
+.dev-ms{display:flex;justify-content:space-between;margin-top:2px;}
+.dev-ms span{font-size:9px;color:var(--text3);}
+
+/* NIVEAU DE BATAILLE */
+.nb-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);}
+.nb-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;}
+.nb-pips{display:flex;gap:5px;}
+.nb-pip{width:18px;height:18px;border:1px solid var(--border2);background:var(--surface3);transition:background .2s;}
+.nb-pip.on{background:var(--red2);border-color:var(--red2);}
+.nb-desc{font-size:11px;color:var(--text2);margin-top:4px;}
+
+/* POP */
+.pop-grid{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:8px;margin-bottom:10px;}
+.pop-lbl{font-size:13px;color:var(--text2);}
+.pop-val{font-family:'Special Elite',cursive;font-size:20px;min-width:52px;text-align:center;}
+.pop-hint{font-size:10px;color:var(--text3);margin-top:3px;}
+.pop-hint.warn{color:var(--amber);}
+
+/* AÎNÉ */
+.aine-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.aine-row:last-child{border-bottom:none;}
+.aine-lbl{flex:1;font-size:13px;color:var(--text2);}
+.status-badge{font-size:10px;padding:2px 8px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1px solid var(--border2);background:transparent;font-family:'Rajdhani',sans-serif;transition:all .15s;}
+.status-badge.present{border-color:var(--green2);color:var(--green2);background:rgba(72,151,84,.08);}
+.status-badge.absent{border-color:var(--red2);color:var(--red2);}
+.status-badge.inconnu{border-color:var(--text3);color:var(--text3);}
+
+/* CAÏDS */
+.caid-row{display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;gap:8px;padding:9px 10px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.caid-row:last-child{border-bottom:none;}
+.caid-color{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.caid-nom{font-size:14px;font-weight:600;}
+.caid-attitude{font-size:10px;padding:2px 7px;cursor:pointer;border:1px solid;font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:.07em;transition:all .15s;}
+.att-allie{border-color:var(--green2);color:var(--green2);}
+.att-neutre{border-color:var(--text3);color:var(--text3);}
+.att-hostile{border-color:var(--red2);color:var(--red2);}
+.caid-terr{font-size:11px;color:var(--text3);font-style:italic;}
+
+/* PROJETS */
+.proj-item{border:1px solid var(--border);margin-bottom:7px;overflow:hidden;}
+.proj-item.done{opacity:.5;border-color:var(--green);}
+.proj-hd{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:7px;padding:9px 11px;background:var(--surface2);cursor:pointer;transition:background .15s;}
+.proj-hd:hover{background:var(--surface3);}
+.proj-nom{font-size:14px;font-weight:600;}
+.proj-pts{font-family:'Special Elite',cursive;font-size:15px;}
+.pts-ok{color:var(--green2);}
+.pts-warn{color:var(--amber);}
+.pts-crit{color:var(--red2);}
+.proj-body{padding:10px 12px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);display:none;}
+.proj-body.open{display:block;}
+.proj-meta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;}
+.proj-meta span{color:var(--text3);}
+.bar-bg{height:5px;background:var(--surface3);margin:6px 0 5px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--gold);transition:width .3s;}
+.proj-ctrls{display:flex;align-items:center;gap:6px;margin-top:8px;}
+
+/* ADD PANEL */
+.add-panel{border:1px dashed var(--border);padding:13px 15px;margin-top:10px;display:none;}
+.add-panel.open{display:block;}
+
+/* EDIT FORM INLINE */
+.edit-form{padding:12px;border-top:1px solid var(--border);background:var(--surface3);}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.edit-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:500px){.edit-grid,.edit-grid.cols3{grid-template-columns:1fr;}}
+.ef{display:flex;flex-direction:column;gap:3px;}
+.ef label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.ef input,.ef select{background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:5px 8px;font-family:'Rajdhani',sans-serif;font-size:13px;outline:none;width:100%;}
+.ef input:focus,.ef select:focus{border-color:var(--gold);}
+.ef input[type=number]{-moz-appearance:textfield;}
+.edit-actions{display:flex;gap:7px;margin-top:10px;}
+.btn-save{background:rgba(199,144,30,.15);border:1px solid var(--gold);color:var(--gold);padding:5px 14px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;transition:all .15s;}
+.btn-save:hover{background:rgba(199,144,30,.3);}
+.btn-cancel{background:transparent;border:1px solid var(--border2);color:var(--text3);padding:5px 12px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:12px;transition:all .15s;}
+.btn-cancel:hover{border-color:var(--text2);color:var(--text2);}
+.pts-direct-hint{font-size:10px;color:var(--text3);margin-top:3px;}
+.fl{display:flex;gap:7px;margin-bottom:7px;flex-wrap:wrap;}
+.fg{display:flex;flex-direction:column;flex:1;min-width:110px;}
+.fl-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.fl input,.fl select{background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:5px 7px;font-family:'Rajdhani',sans-serif;font-size:13px;outline:none;width:100%;}
+.fl input:focus,.fl select:focus{border-color:var(--gold);}
+.preset-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.preset-btn{background:var(--surface3);border:1px solid var(--border);color:var(--text2);padding:4px 7px;cursor:pointer;font-size:11px;font-family:'Rajdhani',sans-serif;transition:all .15s;white-space:nowrap;}
+.preset-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* SANCTUAIRE */
+.art-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);font-size:13px;}
+.art-item:last-child{border-bottom:none;}
+.art-nom{flex:1;}
+.art-badge{font-size:10px;color:var(--gold);background:rgba(199,144,30,.1);padding:2px 7px;}
+.art-dev{font-size:10px;color:var(--text3);margin-left:4px;}
+
+/* MENACES ZONE */
+.menace-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.menace-lbl{flex:1;font-size:13px;}
+.menace-dots{display:flex;gap:3px;}
+.dot{width:14px;height:14px;border:1px solid var(--border2);background:var(--surface3);cursor:pointer;transition:background .15s;}
+.dot.l1{background:var(--green2);border-color:var(--green2);}
+.dot.l2{background:var(--amber);border-color:var(--amber);}
+.dot.l3{background:var(--red2);border-color:var(--red2);}
+
+/* LOG */
+.log-entry{font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);}
+.log-entry:last-child{border-bottom:none;}
+.log-ts{color:var(--text3);margin-right:6px;}
+.log-msg{color:var(--text2);}
+
+/* TOOLS */
+.tools-bar{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
+.tool-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:7px 13px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;transition:all .15s;}
+.tool-btn:hover{border-color:var(--gold);color:var(--gold);}
+.tool-btn.danger:hover{border-color:var(--red2);color:var(--red2);}
+
+/* SEP */
+.sep{font-family:'Special Elite',cursive;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.2em;text-align:center;margin:18px 0 12px;position:relative;}
+.sep::before,.sep::after{content:'';position:absolute;top:50%;width:35%;height:1px;background:var(--border);}
+.sep::before{left:0;}.sep::after{right:0;}
+
+/* SETTINGS ROW */
+.set-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);margin-bottom:10px;}
+.set-row select{background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:3px 6px;font-family:'Rajdhani',sans-serif;font-size:13px;outline:none;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--surface3);border:1px solid var(--gold);color:var(--gold2);padding:9px 16px;font-family:'Special Elite',cursive;font-size:12px;letter-spacing:.05em;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.err{border-color:var(--red2);color:var(--red2);}
+
+/* DERNIÈRE ACTION (bannière en haut) */
+.last-action{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--gold);padding:8px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;flex-wrap:wrap;}
+.last-action .la-lbl{font-family:'Special Elite',cursive;font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;flex-shrink:0;}
+.last-action .la-who{color:var(--gold2);font-weight:600;}
+.last-action .la-msg{color:var(--text2);flex:1;min-width:150px;}
+.last-action .la-when{color:var(--text3);font-size:10px;flex-shrink:0;}
+.last-action.empty .la-msg{font-style:italic;color:var(--text3);}
+
+/* PSEUDO & BOUTON EDIT */
+.user-bar .pseudo{color:var(--gold2);font-weight:600;}
+.user-bar .edit-pseudo-btn{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 4px;transition:color .15s;}
+.user-bar .edit-pseudo-btn:hover{color:var(--gold);}
+
+/* LOG ENRICHI */
+.log-entry{font-size:11px;padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;}
+.log-entry:last-child{border-bottom:none;}
+.log-ts{color:var(--text3);flex-shrink:0;font-family:'Special Elite',cursive;font-size:10px;min-width:26px;}
+.log-who{color:var(--gold);flex-shrink:0;font-weight:600;min-width:60px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.log-when{color:var(--text3);flex-shrink:0;font-size:9px;min-width:40px;}
+.log-msg{color:var(--text2);flex:1;min-width:120px;}
+
+/* MODAL PSEUDO */
+.modal-overlay{position:fixed;inset:0;background:rgba(14,12,10,.85);display:none;align-items:center;justify-content:center;z-index:9998;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--gold);padding:24px 22px;max-width:380px;width:100%;}
+.modal-title{font-family:'Special Elite',cursive;font-size:18px;color:var(--gold2);margin-bottom:4px;}
+.modal-sub{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:18px;}
+.modal-box input{width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:9px 11px;font-family:'Rajdhani',sans-serif;font-size:14px;outline:none;margin-bottom:12px;}
+.modal-box input:focus{border-color:var(--gold);}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;}
+
+/* TEXTAREA */
+textarea{width:100%;min-height:90px;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:9px;font-family:'Rajdhani',sans-serif;font-size:13px;resize:vertical;outline:none;}
+textarea:focus{border-color:var(--gold);}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-title">L'Arche</div>
+    <div class="login-sub">Mutant : Year Zero</div>
+    <form id="login-form">
+      <div class="ef">
+        <label>E-mail</label>
+        <input type="email" id="login-email" autocomplete="email" required>
+      </div>
+      <div class="ef">
+        <label>Mot de passe</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="login-btn" id="login-btn">Entrer dans l'Arche</button>
+      <div class="login-err" id="login-err"></div>
+    </form>
+    <div class="login-hint">Seuls les membres du Peuple peuvent accéder à la chronique.<br>Contactez le MJ pour obtenir vos accès.</div>
+  </div>
+</div>
+
+<!-- ===== MODAL PSEUDO ===== -->
+<div class="modal-overlay" id="pseudo-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="pseudo-modal-title">Choisis ton pseudo</div>
+    <div class="modal-sub" id="pseudo-modal-sub">Comment veux-tu apparaître dans la chronique ?</div>
+    <input type="text" id="pseudo-input" maxlength="30" placeholder="Ex: Epsy, Ulf, Mara…" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn-cancel" id="pseudo-cancel" style="display:none;">Annuler</button>
+      <button class="btn-save" id="pseudo-save">Valider</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP (hidden until login) ===== -->
+<div class="page" id="main-app" style="display:none;">
+
+<!-- USER BAR -->
+<div class="user-bar">
+  <a href="index.html" style="background:transparent;border:1px solid var(--border2);color:var(--text3);padding:3px 9px;font-family:'Rajdhani',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.08em;text-decoration:none;transition:all .15s;" onmouseover="this.style.color='var(--gold)';this.style.borderColor='var(--gold)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border2)'">⌂ Accueil</a>
+  <span class="sync-dot" id="sync-dot" title="Synchronisation"></span>
+  <span class="pseudo" id="user-pseudo">—</span>
+  <button class="edit-pseudo-btn" id="edit-pseudo-btn" title="Modifier mon pseudo">✎</button>
+  <span style="color:var(--text3);font-size:10px;">(<span id="user-email">—</span>)</span>
+  <span class="role pj" id="user-role">PJ</span>
+  <button class="logout-btn" id="logout-btn">Déconnexion</button>
+</div>
+
+<!-- DERNIÈRE ACTION -->
+<div class="last-action empty" id="last-action">
+  <span class="la-lbl">Dernière action</span>
+  <span class="la-msg">Aucune action enregistrée pour le moment.</span>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="camp-label">L'Arche — Mutant : Year Zero</div>
+    <input type="text" id="camp-name" value="L'Arche du Peuple" maxlength="44"/>
+  </div>
+  <div class="header-stats">
+    <div class="hstat">
+      <div class="hl">Population</div>
+      <div class="hv" id="hpop">0</div>
+      <div class="hs" id="hpop-sub">/ 200</div>
+    </div>
+    <div class="divv"></div>
+    <div class="hstat">
+      <div class="hl">Séance</div>
+      <div class="hv" id="hses">1</div>
+      <div class="hs">en cours</div>
+    </div>
+    <div class="divv"></div>
+    <div class="hstat">
+      <div class="hl">PJ</div>
+      <div class="hv" id="hpj">4</div>
+      <div class="hs">joueurs</div>
+    </div>
+    <div class="divv"></div>
+    <div class="hstat">
+      <div class="hl">Niv. Bataille</div>
+      <div class="hv" id="hnb">1</div>
+      <div class="hs" id="hnb-sub">Gardes basiques</div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 1 : DÉV + POP/AÎNÉ -->
+<div class="grid-2">
+
+  <!-- DÉV -->
+  <div class="panel">
+    <div class="pt">Niveaux de développement (DÉV)</div>
+    <div id="dev-container"></div>
+    <div class="nb-row">
+      <span class="nb-label">Niveau de bataille</span>
+      <div class="nb-pips" id="nb-pips">
+        <div class="nb-pip"></div><div class="nb-pip"></div>
+        <div class="nb-pip"></div><div class="nb-pip"></div>
+      </div>
+    </div>
+    <div class="nb-desc" id="nb-desc">Défense 0–9 : quelques gardes avec des gourdins.</div>
+  </div>
+
+  <!-- POP + SETTINGS + AÎNÉ -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <div class="panel" style="flex:0 0 auto;">
+      <div class="pt">Population & Séance</div>
+      <div class="set-row">
+        Nombre de PJ :
+        <select id="nb-pj">
+          <option value="2">2</option><option value="3">3</option>
+          <option value="4" selected>4</option><option value="5">5</option><option value="6">6</option>
+        </select>
+        <span style="font-size:10px;color:var(--text3);">(multiplicateur projets)</span>
+      </div>
+      <div class="pop-grid">
+        <span class="pop-lbl">Membres du Peuple</span>
+        <div style="display:flex;gap:4px;">
+          <button class="btn-md" onclick="adjPop(-10)">−10</button>
+          <button class="btn-md" onclick="adjPop(-1)">−1</button>
+        </div>
+        <span class="pop-val" id="pop-val">0</span>
+        <div style="display:flex;gap:4px;">
+          <button class="btn-md" onclick="adjPop(1)">+1</button>
+          <button class="btn-md" onclick="adjPop(10)">+10</button>
+        </div>
+      </div>
+      <div class="pop-hint" id="pop-hint"></div>
+      <button class="btn-full mj-only" onclick="finSession()">⚔ Clôturer la séance</button>
+    </div>
+
+    <div class="panel" style="flex:1;">
+      <div class="pt">L'Aîné & figures clés</div>
+      <div id="aine-container"></div>
+      <button class="btn-md mj-only" style="margin-top:10px;" onclick="addFigure()">+ Ajouter une figure</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- CAÏDS -->
+<div class="sep">Caïds de l'Arche</div>
+<div class="panel">
+  <div class="pt">Factions & Bosses
+    <button class="btn-sm mj-only" onclick="addCaid()">+</button>
+  </div>
+  <div id="caid-container">
+    <div style="font-size:12px;color:var(--text3);font-style:italic;">Aucun Caïd enregistré.</div>
+  </div>
+  <div style="margin-top:12px;font-size:10px;color:var(--text3);line-height:1.6;">
+    Les Caïds contrôlent des territoires dans l'Arche. Leur attitude envers le Peuple influence les projets et la sécurité intérieure.
+  </div>
+</div>
+
+<!-- PROJETS -->
+<div class="sep">Projets du Peuple</div>
+<div class="panel">
+  <div class="pt">Projets en cours
+    <button class="btn-sm" id="add-proj-btn" onclick="toggleAddPanel()">+</button>
+  </div>
+
+  <div class="add-panel" id="add-panel">
+    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px;">Projets officiels (livre de base)</div>
+    <div class="preset-wrap" id="preset-list"></div>
+    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin:10px 0 6px;">Projet personnalisé</div>
+    <div class="fl">
+      <div class="fg"><div class="fl-lbl">Nom</div><input id="pn" placeholder="Ex: Palissade" maxlength="40"/></div>
+      <div class="fg" style="max-width:90px;"><div class="fl-lbl">Multiplicateur</div>
+        <select id="pm"><option value="1">1×</option><option value="2" selected>2×</option><option value="3">3×</option></select>
+      </div>
+    </div>
+    <div class="fl">
+      <div class="fg"><div class="fl-lbl">Compétences</div><input id="psk" placeholder="Ex: Combat, Endurance"/></div>
+      <div class="fg"><div class="fl-lbl">DÉV requis</div><input id="pdev" placeholder="Ex: Défense 10"/></div>
+      <div class="fg"><div class="fl-lbl">Bonus DÉV</div><input id="pbo" placeholder="Ex: Défense +D6"/></div>
+    </div>
+    <button class="btn-md" onclick="addProj()">Ajouter le projet</button>
+  </div>
+
+  <div id="proj-container" style="margin-top:10px;"></div>
+  <div style="margin-top:12px;font-size:10px;color:var(--text3);line-height:1.6;">
+    Chaque PJ peut contribuer une fois par séance. Points de Projet = multiplicateur × nombre de PJ.
+  </div>
+</div>
+
+<!-- SANCTUAIRE -->
+<div class="sep">Sanctuaire du Renouveau</div>
+<div class="panel">
+  <div class="pt">Artefacts déposés
+    <button class="btn-sm" onclick="addArt()">+</button>
+  </div>
+  <div id="sanctuaire-container">
+    <div style="font-size:12px;color:var(--text3);font-style:italic;">Aucun artefact au Sanctuaire.</div>
+  </div>
+  <div style="margin-top:12px;font-size:10px;color:var(--text3);line-height:1.6;">
+    Confier un artefact au Sanctuaire ajoute son bonus au DÉV de l'Arche. Le garder pour soi prive le Peuple de ce savoir.
+  </div>
+</div>
+
+<!-- MENACES ZONE -->
+<div class="sep">Menaces de la Zone</div>
+<div class="panel">
+  <div class="pt">Dangers actifs
+    <button class="btn-sm mj-only" onclick="addMenace()">+</button>
+  </div>
+  <div id="menace-container">
+    <div style="font-size:12px;color:var(--text3);font-style:italic;">Aucune menace identifiée.</div>
+  </div>
+  <div style="margin-top:10px;font-size:10px;color:var(--text3);">Vert = repéré · Ambre = imminent · Rouge = critique</div>
+</div>
+
+<!-- JOURNAL -->
+<div class="sep">Journal de campagne</div>
+<div class="panel">
+  <div class="pt">Notes — Séance <span id="note-ses">1</span></div>
+  <textarea id="session-notes" placeholder="Événements, découvertes, tensions au sein du Peuple, PNJ rencontrés..."></textarea>
+</div>
+
+<div class="panel">
+  <div class="pt">Historique
+    <button class="btn-sm mj-only" onclick="clearLog()">✕</button>
+  </div>
+  <div id="log-container" style="max-height:130px;overflow-y:auto;">
+    <div style="font-size:12px;color:var(--text3);font-style:italic;">Aucune entrée.</div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div class="tools-bar">
+  <button class="tool-btn" onclick="exportData()">↓ Exporter JSON (backup)</button>
+  <button class="tool-btn mj-only" onclick="document.getElementById('imp').click()">↑ Importer JSON</button>
+  <input type="file" id="imp" accept=".json" style="display:none;" onchange="importData(event)"/>
+  <button class="tool-btn danger mj-only" onclick="resetAll()">⚠ Réinitialiser</button>
+</div>
+
+</div><!-- .page -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== FIREBASE + APP SCRIPT ===== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getFirestore, doc, onSnapshot, setDoc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+/* ─── CONFIG FIREBASE ───────────────────────────────────
+   À personnaliser avec tes propres clés si tu clones le projet. */
+const firebaseConfig = {
+  apiKey: "AIzaSyBDxi-HmCweLukbYF2KMq9O72yS9PIMoeA",
+  authDomain: "myz-campagne.firebaseapp.com",
+  projectId: "myz-campagne",
+  storageBucket: "myz-campagne.firebasestorage.app",
+  messagingSenderId: "352488409798",
+  appId: "1:352488409798:web:e6d3daa4bc6e8a09a065c7",
+  measurementId: "G-2EG7MHL2SC"
+};
+const MJ_UID = "NQDL7LT3zmewlfSJa69VWY6qSPU2";
+const DOC_PATH = "arche/main";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ─── DATA ─────────────────────────────────────────── */
+const DEVS=[
+  {key:'appro',label:'Approvisionnement',color:'#489754'},
+  {key:'culture',label:'Culture',color:'#c7901e'},
+  {key:'techno',label:'Technologie',color:'#3d82be'},
+  {key:'defense',label:'Défense',color:'#bf3522'},
+];
+
+const NB_LEVELS=[
+  {min:0,max:9,niveau:1,desc:"Défense 0–9 : quelques gardes armés de gourdins."},
+  {min:10,max:19,niveau:2,desc:"Défense 10–19 : milice organisée avec armes à feu."},
+  {min:20,max:29,niveau:3,desc:"Défense 20–29 : gardes équipés, armurerie disponible."},
+  {min:30,max:99,niveau:4,desc:"Défense 30+ : petite armée, canons de fortune, lance-flammes."},
+];
+
+const POP_LIMITS=[
+  {min:0,max:9,limit:200},{min:10,max:19,limit:400},
+  {min:20,max:29,limit:800},{min:30,max:99,limit:1600},
+];
+
+const PRESETS=[
+  {nom:'Arène de combat',mult:1,skills:'Combat ou Manipulation',dev:'aucun',bonus:'Défense +D6'},
+  {nom:'Armée',mult:2,skills:'Combat ou Manipulation',dev:'Défense 20',bonus:'Défense +2D6'},
+  {nom:'Arsenal',mult:2,skills:'Tir ou Compréhension',dev:'Techno 35, Défense 10 + Fonderie',bonus:'Défense +2D6'},
+  {nom:'Atelier',mult:3,skills:'Endurance ou Compréhension',dev:'Techno 10',bonus:'Techno +2D6'},
+  {nom:"Atelier d'artificier",mult:1,skills:'Compréhension',dev:'Techno 30, Défense 10 + Distillerie',bonus:'Défense +D6'},
+  {nom:'Colonie',mult:3,skills:'Endurance',dev:'Techno 20, Culture 20',bonus:'aucun'},
+  {nom:'Défenses',mult:2,skills:'Force ou Observation',dev:'aucun',bonus:'Défense +2D6'},
+  {nom:'Distillerie',mult:1,skills:'Compréhension',dev:'Appro 5, Techno 15 + Atelier',bonus:'aucun'},
+  {nom:'Droit de vote',mult:2,skills:'Manipulation',dev:'Culture 30',bonus:'Culture +2D6'},
+  {nom:'Éclairage électrique',mult:2,skills:'Compréhension',dev:'Techno 40 + Atelier + Générateur',bonus:'Techno +2D6'},
+  {nom:'École',mult:2,skills:'Compréhension, Manipulation',dev:'Culture 10',bonus:'Culture +D6'},
+  {nom:'Fonderie',mult:3,skills:'Endurance ou Compréhension',dev:'Techno 25 + Atelier',bonus:'aucun'},
+  {nom:'Fumoir',mult:2,skills:'Endurance ou Compréhension',dev:'Appro 5, Techno 10 + Partie de chasse',bonus:'Appro +D6'},
+  {nom:'Galeries',mult:2,skills:'Déplacement ou Observation',dev:'Défense 20, Techno 10',bonus:'Défense +2D6'},
+  {nom:'Générateur',mult:2,skills:'Endurance ou Compréhension',dev:'Techno 20 + Atelier',bonus:'Culture +D6'},
+  {nom:'Groupe de chasseurs',mult:1,skills:'Endurance ou Tir',dev:'aucun',bonus:'Appro +3D6'},
+  {nom:'Héliographe',mult:2,skills:'Compréhension',dev:'Techno 20 + Atelier + Colonie',bonus:'Culture +D6'},
+  {nom:'Milice',mult:2,skills:'Combat ou Manipulation',dev:'aucun',bonus:'Défense +D6'},
+  {nom:'Palissade',mult:1,skills:'Endurance',dev:'aucun',bonus:'Défense +D6'},
+  {nom:'Partie de chasse',mult:1,skills:'Endurance ou Tir',dev:'aucun',bonus:'Appro +2D6'},
+  {nom:'Serre',mult:2,skills:'Endurance ou Compréhension',dev:'Techno 10',bonus:'Appro +2D6'},
+  {nom:'Terres agricoles',mult:3,skills:'Endurance, Système D',dev:'aucun',bonus:'Appro +2D6'},
+  {nom:'Théâtre',mult:2,skills:'Manipulation, Empathie',dev:'Culture 20',bonus:'Culture +D6'},
+  {nom:'Tribunal',mult:1,skills:'Compréhension, Manipulation',dev:'Culture 5',bonus:'Culture +D6'},
+];
+
+const CAID_COLORS=['#c7901e','#bf3522','#3d82be','#489754','#8a4fc7','#b0b0b0'];
+
+/* ─── STATE ─────────────────────────────────────────── */
+const DEFAULT_STATE = {
+  campName:"L'Arche du Peuple",
+  session:1,nbPj:4,population:0,
+  dev:{appro:0,culture:0,techno:0,defense:0},
+  figures:[
+    {label:"L'Aîné",status:'inconnu'},
+    {label:'Chroniqueurs du Sanctuaire',status:'present'},
+  ],
+  caids:[],
+  projets:[],artefacts:[],menaces:[],
+  notes:{},log:[],
+  lastAction:null,  // { who, msg, when (ms epoch) }
+};
+let S = JSON.parse(JSON.stringify(DEFAULT_STATE));
+let isMJ = false;
+let currentUser = null;
+let playerName = null;              // Pseudo du joueur actuel
+let isRemoteUpdate = false;        // Flag : on ignore les saves déclenchés par un snapshot
+let saveTimer = null;               // Debounce pour saves fréquents (ex: taper dans notes)
+
+/* ─── SYNC FIREBASE ─────────────────────────────────── */
+async function saveToFirestore(immediate=false) {
+  if (isRemoteUpdate) return;       // Ne pas boucler sur les snapshots
+  if (!currentUser) return;
+  // On capture l'état à jour depuis l'UI
+  S.campName = document.getElementById('camp-name').value;
+  S.nbPj = parseInt(document.getElementById('nb-pj').value)||4;
+  S.notes = S.notes || {};
+  S.notes[S.session] = document.getElementById('session-notes').value;
+
+  const doSave = async () => {
+    try {
+      setSyncStatus(true);
+      await setDoc(doc(db, DOC_PATH), S);
+    } catch(e) {
+      console.error('Save error:', e);
+      setSyncStatus(false);
+      showToast('Erreur de synchronisation', true);
+    }
+  };
+
+  if (immediate) {
+    clearTimeout(saveTimer);
+    await doSave();
+  } else {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(doSave, 600);
+  }
+}
+// Exposé globalement pour les onclick
+window.save = () => saveToFirestore(false);
+
+function setSyncStatus(ok){
+  const d = document.getElementById('sync-dot');
+  if (!d) return;
+  d.classList.toggle('off', !ok);
+}
+
+function subscribeToArche() {
+  onSnapshot(doc(db, DOC_PATH),
+    (snap) => {
+      setSyncStatus(true);
+      if (snap.exists()) {
+        isRemoteUpdate = true;
+        // Fusion pour garder les defaults si certains champs manquent
+        S = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), snap.data());
+        renderAll();
+        isRemoteUpdate = false;
+      } else {
+        // Premier lancement : on initialise le document avec les defaults
+        if (isMJ) {
+          setDoc(doc(db, DOC_PATH), S).catch(e=>console.error(e));
+        }
+        renderAll();
+      }
+    },
+    (err) => {
+      console.error('Snapshot error:', err);
+      setSyncStatus(false);
+      showToast('Perte de connexion Firebase', true);
+    }
+  );
+}
+
+/* ─── DÉV ───────────────────────────────────────────── */
+function devColor(v){
+  if(v===0)return'#3a2f24';
+  if(v<10)return'#8c2417';
+  if(v<20)return'#cc6a08';
+  if(v<30)return'#c7901e';
+  return'#489754';
+}
+function renderDev(){
+  const c=document.getElementById('dev-container');
+  c.innerHTML='';
+  DEVS.forEach(d=>{
+    const v=S.dev[d.key];
+    const pct=Math.min(100,v);
+    c.innerHTML+=`<div class="dev-row">
+      <div class="dev-hd">
+        <span class="dev-name">${d.label}</span>
+        <div class="dev-ctrls">
+          <button class="btn-sm" onclick="adjDev('${d.key}',-5)">−5</button>
+          <button class="btn-sm" onclick="adjDev('${d.key}',-1)">−</button>
+          <span class="dev-val">${v}</span>
+          <button class="btn-sm" onclick="adjDev('${d.key}',1)">+</button>
+          <button class="btn-sm" onclick="adjDev('${d.key}',5)">+5</button>
+        </div>
+      </div>
+      <div class="dev-bar-bg">
+        <div class="dev-bar-fill" style="width:${pct}%;background:${devColor(v)};"></div>
+      </div>
+      <div class="dev-ms"><span>0</span><span>10</span><span>20</span><span>30</span><span>40+</span></div>
+    </div>`;
+  });
+}
+window.adjDev = function(k,d){
+  S.dev[k]=Math.max(0,Math.min(99,S.dev[k]+d));
+  renderDev();updateNB();updatePop();
+  addLog(`DÉV ${DEVS.find(x=>x.key===k).label} → ${S.dev[k]}`);
+  saveToFirestore(true);
+};
+
+/* ─── NIVEAU DE BATAILLE ─────────────────────────────── */
+function updateNB(){
+  const def=S.dev.defense;
+  const lvl=NB_LEVELS.find(l=>def>=l.min&&def<=l.max)||NB_LEVELS[0];
+  document.getElementById('hnb').textContent=lvl.niveau;
+  document.getElementById('hnb-sub').textContent='Niveau '+lvl.niveau;
+  document.getElementById('nb-desc').textContent=lvl.desc;
+  const pips=document.querySelectorAll('.nb-pip');
+  pips.forEach((p,i)=>{p.classList.toggle('on',i<lvl.niveau);});
+}
+
+/* ─── POPULATION ─────────────────────────────────────── */
+function popLimit(appro){
+  const l=POP_LIMITS.find(x=>appro>=x.min&&appro<=x.max)||POP_LIMITS[0];
+  return l.limit;
+}
+function updatePop(){
+  const lim=popLimit(S.dev.appro);
+  document.getElementById('hpop').textContent=S.population;
+  document.getElementById('hpop-sub').textContent='/ '+lim;
+  document.getElementById('pop-val').textContent=S.population;
+  const hint=document.getElementById('pop-hint');
+  const pct=S.population/lim;
+  hint.className='pop-hint'+(pct>=.9?' warn':'');
+  hint.textContent='Limite : '+S.population+' / '+lim+(pct>=.9?' ⚠ Proche du maximum':'');
+}
+window.adjPop = function(d){
+  const before = S.population;
+  S.population=Math.max(0,S.population+d);
+  updatePop();
+  addLog(`Population ${before} → ${S.population} (${d>0?'+':''}${d})`);
+  saveToFirestore(true);
+};
+
+/* ─── AÎNÉ & FIGURES ─────────────────────────────────── */
+const ATT_CYCLE_F=['present','absent','inconnu'];
+function renderFigures(){
+  const c=document.getElementById('aine-container');
+  if(S.figures.length===0){c.innerHTML='<div style="font-size:12px;color:var(--text3);font-style:italic;">Aucune figure enregistrée.</div>';return;}
+  c.innerHTML='';
+  S.figures.forEach((f,i)=>{
+    const delBtn = isMJ ? `<button class="btn-icon del" onclick="removeFigure(${i})">✕</button>` : '';
+    const statusBtn = isMJ
+      ? `<button class="status-badge ${f.status}" onclick="cycleFigure(${i})">${f.status}</button>`
+      : `<span class="status-badge ${f.status}">${f.status}</span>`;
+    c.innerHTML+=`<div class="aine-row">
+      <span class="aine-lbl">${f.label}</span>
+      ${statusBtn}
+      ${delBtn}
+    </div>`;
+  });
+}
+window.cycleFigure = function(i){
+  if(!isMJ) return;
+  const idx=ATT_CYCLE_F.indexOf(S.figures[i].status);
+  S.figures[i].status=ATT_CYCLE_F[(idx+1)%ATT_CYCLE_F.length];
+  renderFigures();
+  addLog(`Figure « ${S.figures[i].label} » → ${S.figures[i].status}`);
+  saveToFirestore(true);
+};
+window.addFigure = function(){
+  if(!isMJ) return;
+  const lbl=prompt("Nom de la figure :");if(!lbl)return;
+  S.figures.push({label:lbl,status:'inconnu'});renderFigures();
+  addLog(`Figure ajoutée : ${lbl}`);
+  saveToFirestore(true);
+};
+window.removeFigure = function(i){
+  if(!isMJ) return;
+  const lbl = S.figures[i].label;
+  S.figures.splice(i,1);renderFigures();
+  addLog(`Figure retirée : ${lbl}`);
+  saveToFirestore(true);
+};
+
+/* ─── CAÏDS ──────────────────────────────────────────── */
+const ATT_CYCLE=['allie','neutre','hostile'];
+function renderCaids(){
+  const c=document.getElementById('caid-container');
+  if(S.caids.length===0){c.innerHTML='<div style="font-size:12px;color:var(--text3);font-style:italic;">Aucun Caïd enregistré.</div>';return;}
+  c.innerHTML='';
+  S.caids.forEach((ca,i)=>{
+    const col=CAID_COLORS[i%CAID_COLORS.length];
+    const delBtn = isMJ ? `<button class="btn-icon del" onclick="removeCaid(${i})">✕</button>` : '';
+    const attBtn = isMJ
+      ? `<button class="caid-attitude att-${ca.attitude}" onclick="cycleCaid(${i})">${ca.attitude}</button>`
+      : `<span class="caid-attitude att-${ca.attitude}" style="cursor:default;">${ca.attitude}</span>`;
+    c.innerHTML+=`<div class="caid-row">
+      <div class="caid-color" style="background:${col};"></div>
+      <span class="caid-nom" style="color:${col};">${ca.nom}</span>
+      <span class="caid-terr">${ca.territoire||'—'}</span>
+      ${attBtn}
+      ${delBtn}
+    </div>`;
+  });
+}
+window.cycleCaid = function(i){
+  if(!isMJ) return;
+  const idx=ATT_CYCLE.indexOf(S.caids[i].attitude);
+  S.caids[i].attitude=ATT_CYCLE[(idx+1)%ATT_CYCLE.length];
+  renderCaids();
+  addLog(`Caïd « ${S.caids[i].nom} » : ${S.caids[i].attitude}`);
+  saveToFirestore(true);
+};
+window.addCaid = function(){
+  if(!isMJ) return;
+  const nom=prompt("Nom du Caïd :");if(!nom)return;
+  const terr=prompt("Territoire dans l'Arche :")||'';
+  S.caids.push({nom,territoire:terr,attitude:'neutre'});
+  renderCaids();addLog('Caïd ajouté : '+nom);saveToFirestore(true);
+};
+window.removeCaid = function(i){
+  if(!isMJ) return;
+  addLog('Caïd retiré : '+S.caids[i].nom);S.caids.splice(i,1);renderCaids();saveToFirestore(true);
+};
+
+/* ─── PROJETS ────────────────────────────────────────── */
+let editingProj=-1;
+
+function renderProjets(){
+  const c=document.getElementById('proj-container');
+  if(S.projets.length===0){c.innerHTML='<div style="font-size:12px;color:var(--text3);font-style:italic;padding:8px 0;">Aucun projet en cours.</div>';return;}
+  c.innerHTML='';
+  const nb=parseInt(document.getElementById('nb-pj').value)||4;
+  S.projets.forEach((p,i)=>{
+    const total=p.mult*nb;
+    const done=Math.max(0,total-p.pts);
+    const pct=p.pts===0?100:Math.round((done/total)*100);
+    const cls=p.pts===0?'pts-ok':p.pts<=total*.3?'pts-warn':'pts-crit';
+    const isEditing=(editingProj===i);
+
+    const viewBody=`
+      <div class="proj-body" id="pb${i}" style="${isEditing?'display:none;':''}">
+        <div class="proj-meta">
+          <div><span>Compétences :</span> ${p.skills||'—'}</div>
+          <div><span>DÉV requis :</span> ${p.dev||'—'}</div>
+          <div><span>Bonus :</span> ${p.bonus||'—'}</div>
+        </div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;"></div></div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">${done} / ${total} points (${pct}%)</div>
+        <div class="proj-ctrls">
+          <span style="font-size:11px;color:var(--text3);">Contribuer :</span>
+          <button class="btn-sm" onclick="advProj(${i},1)">+1</button>
+          <button class="btn-sm" onclick="advProj(${i},2)">+2</button>
+          <button class="btn-sm" onclick="advProj(${i},3)">+3</button>
+          <button class="btn-sm" style="color:var(--text3);" onclick="advProj(${i},-1)">−1</button>
+        </div>
+      </div>`;
+
+    const editBody=`
+      <div class="edit-form" id="ef${i}" style="${isEditing?'':'display:none;'}">
+        <div class="edit-grid">
+          <div class="ef">
+            <label>Nom du projet</label>
+            <input id="e-nom-${i}" value="${p.nom.replace(/"/g,'&quot;')}" maxlength="50"/>
+          </div>
+          <div class="ef">
+            <label>Multiplicateur</label>
+            <select id="e-mult-${i}">
+              <option value="1" ${p.mult===1?'selected':''}>1× (= ${1*nb} pts pour ${nb} PJ)</option>
+              <option value="2" ${p.mult===2?'selected':''}>2× (= ${2*nb} pts pour ${nb} PJ)</option>
+              <option value="3" ${p.mult===3?'selected':''}>3× (= ${3*nb} pts pour ${nb} PJ)</option>
+            </select>
+          </div>
+        </div>
+        <div class="edit-grid cols3">
+          <div class="ef">
+            <label>Points restants</label>
+            <input type="number" id="e-pts-${i}" value="${p.pts}" min="0" max="99"/>
+            <div class="pts-direct-hint">Total actuel = ${total} pts</div>
+          </div>
+          <div class="ef">
+            <label>DÉV requis</label>
+            <input id="e-dev-${i}" value="${(p.dev||'').replace(/"/g,'&quot;')}"/>
+          </div>
+          <div class="ef">
+            <label>Bonus DÉV (fin)</label>
+            <input id="e-bonus-${i}" value="${(p.bonus||'').replace(/"/g,'&quot;')}"/>
+          </div>
+        </div>
+        <div class="ef" style="margin-bottom:0;">
+          <label>Compétences</label>
+          <input id="e-skills-${i}" value="${(p.skills||'').replace(/"/g,'&quot;')}"/>
+        </div>
+        <div class="edit-actions">
+          <button class="btn-save" onclick="saveEditProj(${i})">✓ Enregistrer</button>
+          <button class="btn-cancel" onclick="cancelEditProj()">Annuler</button>
+        </div>
+      </div>`;
+
+    c.innerHTML+=`<div class="proj-item ${p.pts===0?'done':''}" id="pi${i}">
+      <div class="proj-hd" onclick="toggleProj(${i},event)">
+        <span class="proj-nom">${p.pts===0?'✓ ':''}${p.nom}</span>
+        <span class="proj-pts ${cls}">${p.pts} / ${total} pts</span>
+        <button class="btn-icon" title="Modifier" onclick="event.stopPropagation();editProj(${i})" style="color:${isEditing?'var(--gold)':'var(--text3)'};">✎</button>
+        <button class="btn-icon ok" onclick="event.stopPropagation();doneProj(${i})" title="Terminer">✓</button>
+        <button class="btn-icon del" onclick="event.stopPropagation();removeProj(${i})" title="Supprimer">✕</button>
+      </div>
+      ${viewBody}${editBody}
+    </div>`;
+  });
+}
+
+window.toggleProj = function(i,e){
+  if(editingProj===i)return;
+  const b=document.getElementById('pb'+i);
+  if(b)b.classList.toggle('open');
+};
+
+window.editProj = function(i){
+  if(editingProj===i){window.cancelEditProj();return;}
+  editingProj=i;
+  renderProjets();
+  const ef=document.getElementById('ef'+i);
+  if(ef)ef.style.display='block';
+  const pb=document.getElementById('pb'+i);
+  if(pb)pb.style.display='none';
+};
+
+window.saveEditProj = function(i){
+  const nom=document.getElementById('e-nom-'+i).value.trim();
+  if(!nom){showToast('Le nom ne peut pas être vide.',true);return;}
+  const mult=parseInt(document.getElementById('e-mult-'+i).value)||2;
+  const pts=parseInt(document.getElementById('e-pts-'+i).value);
+  const nb=parseInt(document.getElementById('nb-pj').value)||4;
+  const newTotal=mult*nb;
+  S.projets[i]={
+    nom,mult,
+    pts:isNaN(pts)?newTotal:Math.max(0,pts),
+    skills:document.getElementById('e-skills-'+i).value.trim(),
+    dev:document.getElementById('e-dev-'+i).value.trim(),
+    bonus:document.getElementById('e-bonus-'+i).value.trim(),
+  };
+  editingProj=-1;
+  renderProjets();saveToFirestore(true);
+  addLog('Projet modifié : '+nom);
+  showToast(nom+' mis à jour.');
+};
+
+window.cancelEditProj = function(){editingProj=-1;renderProjets();};
+
+window.advProj = function(i,d){
+  const before = S.projets[i].pts;
+  S.projets[i].pts=Math.max(0,S.projets[i].pts-d);
+  renderProjets();
+  if(S.projets[i].pts===0 && before>0){
+    addLog(`Projet terminé : ${S.projets[i].nom}`);
+    showToast('Projet terminé : '+S.projets[i].nom);
+  } else {
+    addLog(`Contribution à « ${S.projets[i].nom} » : ${d>0?'+':''}${d} pt (reste ${S.projets[i].pts})`);
+  }
+  saveToFirestore(true);
+};
+window.doneProj = function(i){S.projets[i].pts=0;editingProj=-1;renderProjets();addLog('Projet accompli : '+S.projets[i].nom);showToast('Projet accompli !');saveToFirestore(true);};
+window.removeProj = function(i){addLog('Projet retiré : '+S.projets[i].nom);S.projets.splice(i,1);if(editingProj===i)editingProj=-1;renderProjets();saveToFirestore(true);};
+
+window.toggleAddPanel = function(){document.getElementById('add-panel').classList.toggle('open');};
+
+function renderPresets(){
+  const c=document.getElementById('preset-list');c.innerHTML='';
+  PRESETS.forEach(p=>{
+    const b=document.createElement('button');b.className='preset-btn';b.textContent=p.nom;
+    b.onclick=()=>{
+      const nb=parseInt(document.getElementById('nb-pj').value)||4;
+      S.projets.push({nom:p.nom,mult:p.mult,pts:p.mult*nb,skills:p.skills,dev:p.dev,bonus:p.bonus});
+      renderProjets();addLog('Projet démarré : '+p.nom);
+      showToast(p.nom+' lancé !');
+      document.getElementById('add-panel').classList.remove('open');
+      saveToFirestore(true);
+    };
+    c.appendChild(b);
+  });
+}
+window.addProj = function(){
+  const nom=document.getElementById('pn').value.trim();if(!nom){showToast('Entrez un nom.',true);return;}
+  const mult=parseInt(document.getElementById('pm').value)||2;
+  const nb=parseInt(document.getElementById('nb-pj').value)||4;
+  S.projets.push({nom,mult,pts:mult*nb,
+    skills:document.getElementById('psk').value.trim(),
+    dev:document.getElementById('pdev').value.trim(),
+    bonus:document.getElementById('pbo').value.trim()});
+  renderProjets();addLog('Projet démarré : '+nom);showToast(nom+' ajouté !');
+  ['pn','psk','pdev','pbo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('add-panel').classList.remove('open');
+  saveToFirestore(true);
+};
+
+/* ─── SANCTUAIRE ─────────────────────────────────────── */
+function renderSanctuaire(){
+  const c=document.getElementById('sanctuaire-container');
+  if(S.artefacts.length===0){c.innerHTML='<div style="font-size:12px;color:var(--text3);font-style:italic;">Aucun artefact au Sanctuaire.</div>';return;}
+  c.innerHTML='';
+  S.artefacts.forEach((a,i)=>{
+    c.innerHTML+=`<div class="art-item">
+      <span class="art-nom">${a.nom}</span>
+      <span class="art-badge">${a.bonus}</span>
+      <span class="art-dev">DÉV requis : ${a.devreq||'?'}</span>
+      <button class="btn-icon del" onclick="removeArt(${i})">✕</button>
+    </div>`;
+  });
+}
+window.addArt = function(){
+  const nom=prompt("Nom de l'artefact :");if(!nom)return;
+  const bonus=prompt("Bonus au DÉV (ex: Techno +2D6) :")||'?';
+  const devreq=prompt("DÉV requis pour l'utiliser (ex: Techno 20) :")||'?';
+  S.artefacts.push({nom,bonus,devreq});renderSanctuaire();addLog('Artefact déposé : '+nom);saveToFirestore(true);
+};
+window.removeArt = function(i){addLog('Artefact retiré : '+S.artefacts[i].nom);S.artefacts.splice(i,1);renderSanctuaire();saveToFirestore(true);};
+
+/* ─── MENACES ────────────────────────────────────────── */
+function dotClass(j,level){
+  if(j>=level)return'';
+  if(level<=1)return'l1';
+  if(level<=3)return'l2';
+  return'l3';
+}
+function renderMenaces(){
+  const c=document.getElementById('menace-container');
+  if(S.menaces.length===0){c.innerHTML='<div style="font-size:12px;color:var(--text3);font-style:italic;">Aucune menace identifiée.</div>';return;}
+  c.innerHTML='';
+  S.menaces.forEach((m,i)=>{
+    const dotClick = isMJ ? `onclick="setMenace(${i},__J__)"` : '';
+    const dots=[0,1,2,3,4].map(j=>`<div class="dot ${j<m.level?dotClass(j,m.level):''}" ${dotClick.replace('__J__', j+1)}></div>`).join('');
+    const delBtn = isMJ ? `<button class="btn-icon del" onclick="removeMenace(${i})" style="margin-left:4px;">✕</button>` : '';
+    c.innerHTML+=`<div class="menace-row">
+      <span class="menace-lbl">${m.label}</span>
+      <div class="menace-dots">${dots}</div>
+      ${delBtn}
+    </div>`;
+  });
+}
+window.addMenace = function(){
+  if(!isMJ) return;
+  const l=prompt("Nom de la menace :");if(!l)return;
+  S.menaces.push({label:l,level:1});renderMenaces();
+  addLog(`Menace identifiée : ${l}`);
+  saveToFirestore(true);
+};
+window.setMenace = function(i,v){
+  if(!isMJ) return;
+  const lbl = S.menaces[i].label;
+  S.menaces[i].level=S.menaces[i].level===v?0:v;
+  renderMenaces();
+  const lvlTxt = S.menaces[i].level===0 ? 'écartée' : 'niveau '+S.menaces[i].level;
+  addLog(`Menace « ${lbl} » → ${lvlTxt}`);
+  saveToFirestore(true);
+};
+window.removeMenace = function(i){
+  if(!isMJ) return;
+  const lbl = S.menaces[i].label;
+  S.menaces.splice(i,1);renderMenaces();
+  addLog(`Menace retirée : ${lbl}`);
+  saveToFirestore(true);
+};
+
+/* ─── LOG ────────────────────────────────────────────── */
+function addLog(msg){
+  const entry = {
+    ts: 'S' + S.session,
+    when: Date.now(),
+    who: playerName || 'Inconnu',
+    msg: msg
+  };
+  S.log.unshift(entry);
+  if(S.log.length > 80) S.log.pop();
+  // On met aussi à jour la bannière "Dernière action"
+  S.lastAction = { who: entry.who, msg: entry.msg, when: entry.when };
+  renderLog();
+  renderLastAction();
+}
+
+function formatTime(ms){
+  if(!ms) return '';
+  const d = new Date(ms);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  if(sameDay) return hh+':'+mm;
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mo = String(d.getMonth()+1).padStart(2,'0');
+  return dd+'/'+mo+' '+hh+':'+mm;
+}
+
+function formatTimeAgo(ms){
+  if(!ms) return '';
+  const diff = (Date.now() - ms) / 1000; // secondes
+  if(diff < 60) return "à l'instant";
+  if(diff < 3600) return 'il y a '+Math.floor(diff/60)+' min';
+  if(diff < 86400) return 'il y a '+Math.floor(diff/3600)+' h';
+  return formatTime(ms);
+}
+
+function renderLastAction(){
+  const el = document.getElementById('last-action');
+  const la = S.lastAction;
+  if(!la || !la.msg){
+    el.className = 'last-action empty';
+    el.innerHTML = '<span class="la-lbl">Dernière action</span><span class="la-msg">Aucune action enregistrée pour le moment.</span>';
+    return;
+  }
+  el.className = 'last-action';
+  el.innerHTML = `
+    <span class="la-lbl">Dernière action</span>
+    <span class="la-msg"><span class="la-who">${escapeHtml(la.who||'?')}</span> — ${escapeHtml(la.msg)}</span>
+    <span class="la-when">${formatTimeAgo(la.when)}</span>`;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderLog(){
+  const c=document.getElementById('log-container');
+  if(!S.log || S.log.length===0){c.innerHTML='<div style="font-size:12px;color:var(--text3);font-style:italic;">Aucune entrée.</div>';return;}
+  c.innerHTML = S.log.map(e => {
+    // Compat : anciennes entrées sans who/when
+    const who = e.who || '—';
+    const when = e.when ? formatTime(e.when) : '';
+    return `<div class="log-entry">
+      <span class="log-ts">${escapeHtml(e.ts||'')}</span>
+      <span class="log-who">${escapeHtml(who)}</span>
+      <span class="log-when">${escapeHtml(when)}</span>
+      <span class="log-msg">${escapeHtml(e.msg||'')}</span>
+    </div>`;
+  }).join('');
+}
+window.clearLog = function(){
+  if(!isMJ) return;
+  if(!confirm("Effacer tout l'historique ?")) return;
+  S.log=[];renderLog();saveToFirestore(true);
+};
+
+// Rafraîchit la bannière "il y a X min" toutes les 30s
+setInterval(()=>renderLastAction(), 30000);
+
+/* ─── SESSION ────────────────────────────────────────── */
+window.finSession = function(){
+  if(!isMJ) return;
+  // On sauve les notes courantes d'abord
+  S.notes[S.session]=document.getElementById('session-notes').value;
+  S.session++;
+  document.getElementById('hses').textContent=S.session;
+  document.getElementById('note-ses').textContent=S.session;
+  document.getElementById('session-notes').value=S.notes[S.session]||'';
+  addLog('--- Séance '+(S.session-1)+' clôturée ---');
+  showToast('Séance '+(S.session-1)+' terminée. Séance '+S.session+' en cours.');
+  saveToFirestore(true);
+};
+
+/* ─── TOAST ──────────────────────────────────────────── */
+function showToast(msg,err){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show'+(err?' err':'');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ─── EXPORT / IMPORT / RESET ────────────────────────── */
+window.exportData = function(){
+  const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='arche-myz-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+};
+window.importData = function(e){
+  if(!isMJ){showToast('MJ uniquement',true);return;}
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const imported = JSON.parse(ev.target.result);
+      S = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), imported);
+      renderAll();
+      saveToFirestore(true);
+      showToast('Données importées et synchronisées !');
+    }catch(err){showToast('Fichier invalide.',true);}
+  };
+  r.readAsText(f);
+};
+window.resetAll = function(){
+  if(!isMJ){showToast('MJ uniquement',true);return;}
+  if(!confirm('Réinitialiser TOUTES les données partagées ? Cette action est irréversible.'))return;
+  S = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  renderAll();
+  saveToFirestore(true);
+};
+
+/* ─── RENDER ALL ─────────────────────────────────────── */
+function renderAll(){
+  document.getElementById('camp-name').value=S.campName||"L'Arche du Peuple";
+  document.getElementById('camp-name').disabled = !isMJ;
+  document.getElementById('nb-pj').value=S.nbPj||4;
+  document.getElementById('nb-pj').disabled = !isMJ;
+  document.getElementById('hses').textContent=S.session||1;
+  document.getElementById('hpj').textContent=S.nbPj||4;
+  document.getElementById('note-ses').textContent=S.session||1;
+  document.getElementById('session-notes').value=(S.notes&&S.notes[S.session])||'';
+  renderDev();updateNB();updatePop();
+  renderFigures();renderCaids();
+  renderProjets();renderPresets();
+  renderSanctuaire();renderMenaces();renderLog();
+  renderLastAction();
+}
+
+/* ─── EVENTS ─────────────────────────────────────────── */
+// Camp name : on log seulement quand l'utilisateur a fini de taper (blur ou Enter)
+let campNameBeforeEdit = null;
+document.getElementById('camp-name').addEventListener('focus', (e)=>{
+  campNameBeforeEdit = e.target.value;
+});
+document.getElementById('camp-name').addEventListener('blur', (e)=>{
+  const newVal = e.target.value.trim();
+  if(campNameBeforeEdit !== null && newVal && newVal !== campNameBeforeEdit){
+    addLog(`Nom de l'Arche : « ${campNameBeforeEdit} » → « ${newVal} »`);
+    saveToFirestore(true);
+  }
+  campNameBeforeEdit = null;
+});
+document.getElementById('camp-name').addEventListener('input', ()=>saveToFirestore(false));
+
+document.getElementById('nb-pj').addEventListener('change',()=>{
+  const oldVal = S.nbPj;
+  S.nbPj=parseInt(document.getElementById('nb-pj').value);
+  document.getElementById('hpj').textContent=S.nbPj;
+  renderProjets();
+  addLog(`Nombre de PJ : ${oldVal} → ${S.nbPj}`);
+  saveToFirestore(true);
+});
+document.getElementById('session-notes').addEventListener('input', ()=>saveToFirestore(false));
+
+/* ─── PSEUDO / PROFIL ────────────────────────────────── */
+const pseudoModal   = document.getElementById('pseudo-modal');
+const pseudoInput   = document.getElementById('pseudo-input');
+const pseudoSave    = document.getElementById('pseudo-save');
+const pseudoCancel  = document.getElementById('pseudo-cancel');
+const pseudoTitle   = document.getElementById('pseudo-modal-title');
+const pseudoSub     = document.getElementById('pseudo-modal-sub');
+
+async function loadPlayerName(uid){
+  try {
+    const snap = await getDoc(doc(db, 'profiles', uid));
+    if (snap.exists()) {
+      const d = snap.data();
+      return d.name || null;
+    }
+  } catch(e){
+    console.error('Erreur lecture profil:', e);
+  }
+  return null;
+}
+
+async function savePlayerName(uid, name){
+  try {
+    await setDoc(doc(db, 'profiles', uid), { name: name, email: currentUser?.email || '' });
+    return true;
+  } catch(e){
+    console.error('Erreur écriture profil:', e);
+    showToast('Impossible de sauvegarder le pseudo', true);
+    return false;
+  }
+}
+
+function openPseudoModal({firstTime=false, currentName=''}){
+  pseudoTitle.textContent = firstTime ? 'Bienvenue dans l\'Arche' : 'Modifier ton pseudo';
+  pseudoSub.textContent   = firstTime ? 'Choisis le nom sous lequel tu apparaîtras dans la chronique.' : 'Ton nouveau nom remplacera l\'ancien dans le journal à partir de maintenant.';
+  pseudoInput.value = currentName || '';
+  pseudoCancel.style.display = firstTime ? 'none' : '';
+  pseudoModal.classList.add('show');
+  setTimeout(()=>pseudoInput.focus(), 50);
+}
+
+function closePseudoModal(){
+  pseudoModal.classList.remove('show');
+}
+
+async function handlePseudoSave(){
+  const name = pseudoInput.value.trim();
+  if(!name){ pseudoInput.focus(); return; }
+  if(name.length > 30){ showToast('Pseudo trop long (30 max)', true); return; }
+  pseudoSave.disabled = true;
+  pseudoSave.textContent = '…';
+  const wasEmpty = !playerName;
+  const ok = await savePlayerName(currentUser.uid, name);
+  pseudoSave.disabled = false;
+  pseudoSave.textContent = 'Valider';
+  if(!ok) return;
+  const oldName = playerName;
+  playerName = name;
+  document.getElementById('user-pseudo').textContent = name;
+  closePseudoModal();
+  if (wasEmpty) {
+    showToast('Bienvenue, '+name+' !');
+    addLog(`${name} rejoint la chronique.`);
+  } else if (oldName && oldName !== name) {
+    showToast('Pseudo mis à jour');
+    addLog(`« ${oldName} » se fait désormais appeler « ${name} »`);
+  }
+  saveToFirestore(true);
+}
+
+pseudoSave.addEventListener('click', handlePseudoSave);
+pseudoCancel.addEventListener('click', closePseudoModal);
+pseudoInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); handlePseudoSave(); }
+  if(e.key === 'Escape' && pseudoCancel.style.display !== 'none'){ closePseudoModal(); }
+});
+
+document.getElementById('edit-pseudo-btn').addEventListener('click', ()=>{
+  openPseudoModal({firstTime:false, currentName: playerName || ''});
+});
+
+/* ─── AUTH ──────────────────────────────────────────── */
+const loginForm = document.getElementById('login-form');
+const loginBtn = document.getElementById('login-btn');
+const loginErr = document.getElementById('login-err');
+
+loginForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  loginErr.textContent = '';
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Connexion…';
+  const email = document.getElementById('login-email').value.trim();
+  const pwd   = document.getElementById('login-password').value;
+  try{
+    await signInWithEmailAndPassword(auth, email, pwd);
+  }catch(err){
+    console.error(err);
+    let msg = 'Identifiants incorrects.';
+    if (err.code === 'auth/too-many-requests') msg = 'Trop de tentatives, réessaie plus tard.';
+    else if (err.code === 'auth/network-request-failed') msg = 'Pas de connexion internet.';
+    loginErr.textContent = msg;
+  }finally{
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Entrer dans l\'Arche';
+  }
+});
+
+document.getElementById('logout-btn').addEventListener('click', async ()=>{
+  if(confirm('Se déconnecter ?')){
+    await signOut(auth);
+    location.reload();
+  }
+});
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    isMJ = (user.uid === MJ_UID);
+    document.body.classList.toggle('is-pj', !isMJ);
+    document.getElementById('user-email').textContent = user.email;
+    const roleEl = document.getElementById('user-role');
+    roleEl.textContent = isMJ ? 'MJ' : 'PJ';
+    roleEl.className = 'role ' + (isMJ ? 'mj' : 'pj');
+
+    // Charger le pseudo depuis Firestore
+    playerName = await loadPlayerName(user.uid);
+    document.getElementById('user-pseudo').textContent = playerName || '(sans pseudo)';
+
+    // Afficher l'app
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('main-app').style.display = '';
+
+    // Si pas de pseudo, demander à l'utilisateur (modal non-fermable)
+    if (!playerName) {
+      openPseudoModal({firstTime:true});
+    }
+
+    // Démarrer la sync temps réel
+    subscribeToArche();
+  } else {
+    currentUser = null;
+    isMJ = false;
+    playerName = null;
+    document.getElementById('login-overlay').style.display = '';
+    document.getElementById('main-app').style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>
