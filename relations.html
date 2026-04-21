@@ -568,7 +568,8 @@ body {
 </div>
 
 <!-- ═══════════════════════════════════ SCRIPTS ════════════════════════════════ -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.9/vis-network.min.js"></script>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/vis-network/standalone/umd/vis-network.min.css">
 <script type="module">
 import { auth, db, ADMIN_UID, loginUser, logoutUser, onAuthStateChanged } from './auth-init.js';
 import { collection, doc, addDoc, getDoc, updateDoc, deleteDoc,
