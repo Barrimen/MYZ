@@ -778,6 +778,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('banner-btn-carte')  .addEventListener('click', ()=>{ document.getElementById('map-banner').classList.remove('show'); openImagePicker(); });
   document.getElementById('banner-btn-dismiss').addEventListener('click', ()=> document.getElementById('map-banner').classList.remove('show'));
 
+  // Empêcher la propagation des clics du panneau vers la carte
+  document.getElementById('panel').addEventListener('click', e => e.stopPropagation());
+  document.getElementById('calib-msg').addEventListener('click', e => e.stopPropagation());
+
   document.addEventListener('keydown',  e=>{
     if(e.key==='Escape'){ if(calibStep>0) endCalib(); else closePanel(); }
   });
